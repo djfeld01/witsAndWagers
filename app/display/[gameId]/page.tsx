@@ -5,7 +5,6 @@ import { useParams } from "next/navigation";
 import { useGameChannel } from "@/lib/hooks/useGameChannel";
 import { formatNumber } from "@/lib/format";
 import { getResponsiveTextStyle } from "@/lib/display/responsiveText";
-import SubmissionCounter from "./components/SubmissionCounter";
 import FinalResultsScreen from "./components/FinalResultsScreen";
 import { generateQRCode } from "@/lib/qrcode";
 
@@ -52,10 +51,7 @@ export default function DisplayViewPage() {
 
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showAllPlayers, setShowAllPlayers] = useState(false);
-  const [showNavigation, setShowNavigation] = useState(false);
   const [isAdvancing, setIsAdvancing] = useState(false);
-  const [leaderboardExpanded, setLeaderboardExpanded] = useState(true);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
 
   // Fetch game state
@@ -189,7 +185,6 @@ export default function DisplayViewPage() {
   const sortedPlayers = [...gameState.players].sort(
     (a, b) => b.score - a.score,
   );
-  const topPlayers = sortedPlayers.slice(0, 3);
 
   // Calculate submission counts
   const submittedGuesses = gameState.guesses.filter(
@@ -294,67 +289,86 @@ export default function DisplayViewPage() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-red-900 to-blue-950 text-white">
-      {/* Submission Counter */}
-      <SubmissionCounter
-        phase={gameState.game.currentPhase}
-        submittedCount={
-          gameState.game.currentPhase === "guessing"
-            ? submittedGuesses
-            : submittedBets
-        }
-        totalCount={totalPlayers}
-      />
-
-      {/* Hidden Navigation Toggle - Click bottom-left corner to reveal */}
+      {/* Advance Button - Right Side */}
       <button
-        onClick={() => setShowNavigation(!showNavigation)}
-        className="fixed bottom-4 left-4 w-12 h-12 bg-gray-800 bg-opacity-50 hover:bg-opacity-70 rounded-full flex items-center justify-center z-50 transition-all"
-        title="Toggle navigation"
+        onClick={advancePhase}
+        disabled={isAdvancing}
+        className="fixed right-8 top-1/2 -translate-y-1/2 bg-tangerine-dream-500 hover:bg-tangerine-dream-600 disabled:bg-gray-600 text-white py-6 px-8 rounded-xl font-bold text-xl shadow-lg z-50 transition-all disabled:cursor-not-allowed"
+        title="Advance to next phase"
       >
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M4 6h16M4 12h16M4 18h16"
-          />
-        </svg>
+        {isAdvancing
+          ? "⏳"
+          : gameState?.game.currentPhase === "guessing"
+            ? "Start\nBetting →"
+            : gameState?.game.currentPhase === "betting"
+              ? "Reveal\nAnswer →"
+              : "Next\nQuestion →"}
       </button>
-
-      {/* Navigation Panel */}
-      {showNavigation && (
-        <div className="fixed bottom-20 left-4 bg-black bg-opacity-80 backdrop-blur-sm rounded-xl p-4 z-50 min-w-[200px]">
-          <div className="text-sm text-gray-400 mb-2">Navigation</div>
-          <button
-            onClick={advancePhase}
-            disabled={isAdvancing}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white py-2 px-4 rounded-lg font-medium transition-colors"
-          >
-            {isAdvancing
-              ? "Processing..."
-              : gameState?.game.currentPhase === "guessing"
-                ? "Start Betting"
-                : gameState?.game.currentPhase === "betting"
-                  ? "Reveal Answer"
-                  : "Next Question"}
-          </button>
-        </div>
-      )}
 
       {/* Header */}
       <div className="bg-black bg-opacity-30 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-8 py-6 flex justify-between items-center">
           <h1 className="text-4xl font-bold">{gameState.game.title}</h1>
-          <div className="text-2xl font-mono bg-white text-blue-900 px-6 py-2 rounded-lg">
-            {gameState.game.currentPhase.toUpperCase()}
+          <div className="flex items-center gap-4">
+            {currentQuestion && (
+              <div className="text-lg text-blue-200">
+                {gameState.game.currentPhase === "guessing"
+                  ? `${submittedGuesses}/${totalPlayers} guessed`
+                  : gameState.game.currentPhase === "betting"
+                    ? `${submittedBets}/${totalPlayers} bet`
+                    : ""}
+              </div>
+            )}
+            <div className="text-2xl font-mono bg-white text-blue-900 px-6 py-2 rounded-lg">
+              {gameState.game.currentPhase.toUpperCase()}
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Horizontal Leaderboard Bar */}
+      {sortedPlayers.length > 0 && (
+        <div className="bg-black bg-opacity-20 backdrop-blur-sm border-b border-white border-opacity-10">
+          <div className="max-w-7xl mx-auto px-8 py-3">
+            <div className="flex items-center gap-6 overflow-x-auto">
+              <div className="text-sm font-bold text-blue-200 whitespace-nowrap">
+                LEADERBOARD:
+              </div>
+              {sortedPlayers.slice(0, 10).map((player, index) => (
+                <div
+                  key={player.id}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap ${
+                    index === 0
+                      ? "bg-yellow-500 bg-opacity-30 border-2 border-yellow-400"
+                      : index === 1
+                        ? "bg-gray-400 bg-opacity-30 border-2 border-gray-400"
+                        : index === 2
+                          ? "bg-orange-600 bg-opacity-30 border-2 border-orange-500"
+                          : "bg-white bg-opacity-10"
+                  }`}
+                >
+                  <span className="text-lg">
+                    {index === 0
+                      ? "🥇"
+                      : index === 1
+                        ? "🥈"
+                        : index === 2
+                          ? "🥉"
+                          : `${index + 1}.`}
+                  </span>
+                  <span className="font-medium">{player.displayName}</span>
+                  <span className="font-bold text-lg">{player.score}</span>
+                </div>
+              ))}
+              {sortedPlayers.length > 10 && (
+                <div className="text-sm text-blue-300">
+                  +{sortedPlayers.length - 10} more
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-8 py-12">
@@ -589,92 +603,6 @@ export default function DisplayViewPage() {
                 )}
               </>
             )}
-          </div>
-        )}
-      </div>
-
-      {/* Leaderboard Sidebar */}
-      <div className="fixed top-24 right-8 bg-black bg-opacity-50 backdrop-blur-sm rounded-xl p-4 min-w-[250px]">
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-xl font-bold">
-            {leaderboardExpanded ? "Leaderboard" : "Leader"}
-          </h3>
-          <button
-            onClick={() => setLeaderboardExpanded(!leaderboardExpanded)}
-            className="text-xs bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded"
-          >
-            {leaderboardExpanded ? "Collapse" : "Expand"}
-          </button>
-        </div>
-
-        <div className="space-y-2">
-          {leaderboardExpanded ? (
-            <>
-              {/* Show top 3 or all players */}
-              {(showAllPlayers ? sortedPlayers : topPlayers).map(
-                (player, index) => (
-                  <div
-                    key={player.id}
-                    className={`flex justify-between items-center p-2 rounded-lg ${
-                      index === 0
-                        ? "bg-yellow-500 bg-opacity-30 border-2 border-yellow-400"
-                        : index === 1
-                          ? "bg-gray-400 bg-opacity-30 border-2 border-gray-400"
-                          : index === 2
-                            ? "bg-orange-600 bg-opacity-30 border-2 border-orange-500"
-                            : "bg-white bg-opacity-10"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="text-xl font-bold w-6">
-                        {index === 0
-                          ? "🥇"
-                          : index === 1
-                            ? "🥈"
-                            : index === 2
-                              ? "🥉"
-                              : `${index + 1}.`}
-                      </div>
-                      <div className="font-medium text-sm">
-                        {player.displayName}
-                      </div>
-                    </div>
-                    <div className="text-xl font-bold">{player.score}</div>
-                  </div>
-                ),
-              )}
-              {sortedPlayers.length > 3 && (
-                <button
-                  onClick={() => setShowAllPlayers(!showAllPlayers)}
-                  className="w-full text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded mt-2"
-                >
-                  {showAllPlayers ? "Top 3" : "Show All"}
-                </button>
-              )}
-            </>
-          ) : (
-            <>
-              {/* Show only top player */}
-              {sortedPlayers.length > 0 && (
-                <div className="flex justify-between items-center p-3 rounded-lg bg-yellow-500 bg-opacity-30 border-2 border-yellow-400">
-                  <div className="flex items-center gap-2">
-                    <div className="text-2xl font-bold">🥇</div>
-                    <div className="font-medium">
-                      {sortedPlayers[0].displayName}
-                    </div>
-                  </div>
-                  <div className="text-2xl font-bold">
-                    {sortedPlayers[0].score}
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-
-        {sortedPlayers.length === 0 && (
-          <div className="text-center text-gray-400 py-2 text-sm">
-            No players yet
           </div>
         )}
       </div>
