@@ -99,6 +99,13 @@ export default function DisplayViewPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
+
+        // If game is complete, silently ignore - this is expected behavior
+        if (errorData.error?.code === "GAME_COMPLETE") {
+          console.log("Game is complete - staying on final results screen");
+          return;
+        }
+
         console.error("Advance phase error:", errorData);
         throw new Error(
           `Failed to advance phase: ${errorData.error?.message || response.statusText}`,
@@ -312,7 +319,7 @@ export default function DisplayViewPage() {
       </button>
 
       {/* Navigation Panel */}
-      {showNavigation && (
+      {showNavigation && !showFinalResults && (
         <div className="fixed bottom-20 right-4 bg-black bg-opacity-80 backdrop-blur-sm rounded-xl p-4 z-50 min-w-[200px]">
           <div className="text-sm text-gray-400 mb-2">Navigation</div>
           <button
