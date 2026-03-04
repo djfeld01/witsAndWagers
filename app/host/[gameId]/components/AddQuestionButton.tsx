@@ -54,7 +54,6 @@ export function AddQuestionButton({
     setError(null);
 
     try {
-      // Use the import endpoint to add a single question
       const questionData = {
         text: text.trim(),
         subText: subText.trim() || undefined,
@@ -63,13 +62,10 @@ export function AddQuestionButton({
         followUpNotes: followUpNotes.trim() || undefined,
       };
 
-      const response = await fetch(`/api/games/${gameId}/questions/import`, {
+      const response = await fetch(`/api/games/${gameId}/questions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          questions: [questionData],
-          format: "json",
-        }),
+        body: JSON.stringify(questionData),
       });
 
       if (!response.ok) {
