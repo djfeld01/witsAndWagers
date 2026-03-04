@@ -203,7 +203,7 @@ export default function DisplayViewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 to-purple-900 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-red-900 to-blue-950 text-white">
       {/* Hidden Navigation Toggle - Click bottom-left corner to reveal */}
       <button
         onClick={() => setShowNavigation(!showNavigation)}
@@ -302,9 +302,11 @@ export default function DisplayViewPage() {
                   </div>
                   <div className="grid grid-cols-3 gap-8 max-w-6xl mx-auto">
                     {/* Zero option */}
-                    <div className="bg-gray-700 bg-opacity-50 backdrop-blur-sm p-12 rounded-xl text-center border-4 border-gray-500">
-                      <div className="text-7xl font-bold mb-3">0</div>
-                      <div className="text-lg text-gray-300">
+                    <div className="bg-gray-200 backdrop-blur-sm p-12 rounded-xl text-center border-4 border-gray-600">
+                      <div className="text-7xl font-bold mb-3 text-gray-900">
+                        0
+                      </div>
+                      <div className="text-lg text-gray-700">
                         Always available
                       </div>
                     </div>
@@ -313,15 +315,15 @@ export default function DisplayViewPage() {
                     {currentGuesses.map((guess) => (
                       <div
                         key={guess.id}
-                        className="bg-white bg-opacity-10 backdrop-blur-sm p-12 rounded-xl text-center border-4 border-blue-400"
+                        className="bg-white backdrop-blur-sm p-12 rounded-xl text-center border-4 border-blue-600"
                       >
-                        <div className="text-7xl font-bold mb-3">
+                        <div className="text-7xl font-bold mb-3 text-gray-900">
                           {formatNumber(
                             guess.numericGuess,
                             currentQuestion.answerFormat,
                           )}
                         </div>
-                        <div className="text-xl text-blue-200">
+                        <div className="text-xl text-gray-700">
                           {guess.playerName}
                         </div>
                       </div>
@@ -383,7 +385,7 @@ export default function DisplayViewPage() {
                           className={`p-12 rounded-xl text-center border-4 ${
                             guess.id === closestGuessId
                               ? "bg-green-500 bg-opacity-30 border-green-400 scale-110"
-                              : "bg-white bg-opacity-10 backdrop-blur-sm border-gray-500"
+                              : "bg-white border-gray-400"
                           }`}
                         >
                           {guess.id === closestGuessId && (
@@ -391,13 +393,25 @@ export default function DisplayViewPage() {
                               ⭐ WINNER ⭐
                             </div>
                           )}
-                          <div className="text-7xl font-bold mb-3">
+                          <div
+                            className={`text-7xl font-bold mb-3 ${
+                              guess.id === closestGuessId
+                                ? "text-white"
+                                : "text-gray-900"
+                            }`}
+                          >
                             {formatNumber(
                               guess.numericGuess,
                               currentQuestion.answerFormat,
                             )}
                           </div>
-                          <div className="text-xl text-blue-200">
+                          <div
+                            className={`text-xl ${
+                              guess.id === closestGuessId
+                                ? "text-green-200"
+                                : "text-gray-700"
+                            }`}
+                          >
                             {guess.playerName}
                           </div>
                         </div>
