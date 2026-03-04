@@ -23,7 +23,7 @@ interface GameState {
     correctAnswer: string;
     answerFormat: "plain" | "currency" | "date" | "percentage";
     followUpNotes: string | null;
-    order: number;
+    orderIndex: number;
   }>;
   players: Array<{
     id: string;
@@ -209,8 +209,8 @@ export default function DisplayViewPage() {
   const isLastQuestion =
     currentQuestion &&
     gameState.questions.length > 0 &&
-    currentQuestion.order ===
-      Math.max(...gameState.questions.map((q) => q.order));
+    currentQuestion.orderIndex ===
+      Math.max(...gameState.questions.map((q) => q.orderIndex));
 
   const showFinalResults =
     gameState.game.currentPhase === "reveal" && isLastQuestion;
