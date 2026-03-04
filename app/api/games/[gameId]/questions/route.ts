@@ -17,9 +17,11 @@ export async function POST(
 ) {
   try {
     const { gameId } = await params;
+    console.log("Adding question to game:", gameId);
 
     // Verify authorization
     const isHost = await verifyGameHost(gameId);
+    console.log("Is host:", isHost);
     if (!isHost) {
       return NextResponse.json(
         {
@@ -34,6 +36,7 @@ export async function POST(
 
     // Check if game allows question editing
     const canEdit = await canEditQuestions(gameId);
+    console.log("Can edit:", canEdit);
     if (!canEdit) {
       return NextResponse.json(
         {
@@ -48,15 +51,18 @@ export async function POST(
 
     // Parse request body
     const body = await request.json();
+    console.log("Request body:", body);
 
     // Validate question
-    const validationError = validateQuestion(body);
-    if (validationError) {
+    const validationErrors = validateQuestion(body);
+    console.log("Validation errors:", validationErrors);
+    if (validationErrors.length > 0) {
       return NextResponse.json(
         {
           error: {
             code: "VALIDATION_ERROR",
-            message: validationError,
+            message: "Invalid question data",
+            details: validationErrors,
           },
         },
         { status: 400 },
@@ -70,6 +76,7 @@ export async function POST(
       .where(eq(questions.gameId, gameId));
 
     const nextOrderIndex = (maxOrderResult[0]?.maxOrder ?? -1) + 1;
+    console.log("Next order index:", nextOrderIndex);
 
     // Insert question
     const questionId = randomUUID();
@@ -84,6 +91,7 @@ export async function POST(
       followUpNotes: body.followUpNotes || null,
     };
 
+    console.log("Inserting question:", newQuestion);
     await db.insert(questions).values(newQuestion);
 
     // If this is the first question, set it as current question
@@ -92,13 +100,16 @@ export async function POST(
       .from(questions)
       .where(eq(questions.gameId, gameId));
 
+    console.log("Question count:", questionCount.length);
     if (questionCount.length === 1) {
+      console.log("Setting as current question");
       await db
         .update(games)
         .set({ currentQuestionId: questionId })
         .where(eq(games.id, gameId));
     }
 
+    console.log("Question added successfully");
     return NextResponse.json(
       {
         success: true,

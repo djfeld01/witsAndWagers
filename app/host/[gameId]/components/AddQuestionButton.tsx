@@ -62,20 +62,25 @@ export function AddQuestionButton({
         followUpNotes: followUpNotes.trim() || undefined,
       };
 
+      console.log("Adding question:", questionData);
+
       const response = await fetch(`/api/games/${gameId}/questions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(questionData),
       });
 
+      const data = await response.json();
+      console.log("Response:", response.status, data);
+
       if (!response.ok) {
-        const data = await response.json();
         throw new Error(data.error?.message || "Failed to add question");
       }
 
       handleCancel();
       onQuestionAdded();
     } catch (err) {
+      console.error("Error adding question:", err);
       setError(err instanceof Error ? err.message : "Failed to add question");
     } finally {
       setSaving(false);
