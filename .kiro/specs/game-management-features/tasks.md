@@ -1,0 +1,282 @@
+# Implementation Plan: Game Management Features
+
+## Overview
+
+This implementation plan breaks down the game management features into discrete coding tasks following a bottom-up approach: utilities → API routes → UI components → integration → testing. The plan focuses on three core subsystems: bulk question import, question editing with state-based access control, and game reset functionality.
+
+## Tasks
+
+- [ ] 1. Set up utility functions and type definitions
+  - [x] 1.1 Create question type definitions and interfaces
+    - Create `lib/types/questions.ts` with Question, QuestionInput, ImportResult, ValidationError types
+    - Define AnswerFormat type union
+    - _Requirements: 1.1, 1.2, 2.1_
+  - [x] 1.2 Implement question validator utility
+    - Create `lib/questions/validator.ts` with validateQuestion and validateQuestionBatch functions
+    - Validate required fields (text, correctAnswer)
+    - Validate correctAnswer is numeric
+    - Return descriptive error messages with field names
+    - _Requirements: 2.1, 2.2, 2.3_
+  - [ ]\* 1.3 Write property test for question validator
+    - **Property 6: Required Field Validation**
+    - **Validates: Requirements 2.1, 2.2**
+  - [x] 1.4 Implement CSV parser
+    - Create `lib/questions/parser.ts` with parseCSV function
+    - Use csv-parse library to parse CSV content
+    - Map CSV rows to ParsedQuestion objects
+    - Handle parse errors with line numbers
+    - _Requirements: 1.1, 2.3, 7.1_
+  - [x] 1.5 Implement JSON parser
+    - Add parseJSON function to `lib/questions/parser.ts`
+    - Parse JSON array of questions
+    - Handle JSON syntax errors
+    - _Requirements: 1.2, 7.2_
+  - [ ]\* 1.6 Write property test for parser error handling
+    - **Property 14: Parser Error Handling**
+    - **Validates: Requirements 7.3**
+  - [x] 1.7 Implement CSV and JSON serializers
+    - Add serializeToCSV and serializeToJSON functions to `lib/questions/parser.ts`
+    - Format Question objects into valid CSV format
+    - Format Question objects into valid JSON format
+    - _Requirements: 7.4, 7.5_
+  - [ ]\* 1.8 Write property test for serialization round-trip
+    - **Property 13: Serialization Round-Trip**
+    - **Validates: Requirements 7.1, 7.2, 7.4, 7.5, 7.6**
+
+- [ ] 2. Implement game state and authorization utilities
+  - [x] 2.1 Create game state checker utility
+    - Create `lib/games/state.ts` with isGameActive and canEditQuestions functions
+    - Check if game has players joined
+    - Check if game phase is not "guessing"
+    - Check if currentQuestionId is not first question
+    - Return true if any condition indicates active game
+    - _Requirements: 3.5, 3.6_
+  - [ ]\* 2.2 Write unit tests for game state checker
+    - Test inactive game scenarios (no players, guessing phase, first question)
+    - Test active game scenarios (has players, non-guessing phase, later question)
+    - _Requirements: 3.5_
+  - [x] 2.3 Create authorization helper utility
+    - Create `lib/auth/host.ts` with verifyGameHost function
+    - Query database to check if userId matches game creator
+    - Return boolean indicating host status
+    - _Requirements: 8.1, 8.2, 8.3_
+  - [ ]\* 2.4 Write unit tests for authorization helper
+    - Test authorized host access
+    - Test unauthorized user access
+    - _Requirements: 8.4_
+
+- [x] 3. Checkpoint - Ensure all utility tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ] 4. Implement question import API endpoint
+  - [x] 4.1 Create POST /api/games/[gameId]/questions/import route
+    - Create `app/api/games/[gameId]/questions/import/route.ts`
+    - Handle FormData file upload
+    - Extract file content and determine type (CSV/JSON)
+    - Call appropriate parser based on content type
+    - _Requirements: 1.1, 1.2_
+  - [x] 4.2 Add validation and state checking to import endpoint
+    - Validate all parsed questions using validateQuestionBatch
+    - Check game state using canEditQuestions
+    - Verify user is game host using verifyGameHost
+    - Return validation errors with question indices if validation fails
+    - Return state error if game is active
+    - Return authorization error if user is not host
+    - _Requirements: 1.3, 1.4, 3.5, 8.3_
+  - [x] 4.3 Add database transaction for bulk import
+    - Begin database transaction
+    - Insert all questions with correct orderIndex values
+    - Associate questions with gameId
+    - Commit transaction on success
+    - Rollback on any error
+    - Return success response with imported count
+    - _Requirements: 1.5, 1.6, 1.7_
+  - [ ]\* 4.4 Write property test for validation before import
+    - **Property 2: Validation Before Import**
+    - **Validates: Requirements 1.3**
+  - [ ]\* 4.5 Write property test for complete import on success
+    - **Property 4: Complete Import on Success**
+    - **Validates: Requirements 1.5, 1.7**
+  - [ ]\* 4.6 Write property test for order preservation
+    - **Property 5: Order Preservation**
+    - **Validates: Requirements 1.6**
+  - [ ]\* 4.7 Write unit tests for import endpoint
+    - Test successful CSV import
+    - Test successful JSON import
+    - Test validation error response format
+    - Test state error when game is active
+    - Test authorization error for non-host
+    - Test file too large error
+    - Test unsupported file type error
+    - _Requirements: 1.1, 1.2, 1.3, 1.4, 3.5, 8.3_
+
+- [ ] 5. Implement question editing API endpoints
+  - [x] 5.1 Create PATCH /api/games/[gameId]/questions/[questionId] route
+    - Create `app/api/games/[gameId]/questions/[questionId]/route.ts`
+    - Parse request body with question updates
+    - Validate question data
+    - Check game state using canEditQuestions
+    - Verify user is game host
+    - Update question in database
+    - Return updated question
+    - _Requirements: 3.1, 3.2, 3.5, 8.1_
+  - [ ]\* 5.2 Write property test for edit permissions on inactive games
+    - **Property 7: Edit Permissions on Inactive Games**
+    - **Validates: Requirements 3.1, 3.2, 3.3, 3.4**
+  - [ ]\* 5.3 Write property test for edit restrictions on active games
+    - **Property 8: Edit Restrictions on Active Games**
+    - **Validates: Requirements 3.5, 3.6**
+  - [x] 5.4 Create DELETE /api/games/[gameId]/questions/[questionId] route
+    - Add DELETE handler to `app/api/games/[gameId]/questions/[questionId]/route.ts`
+    - Check game state using canEditQuestions
+    - Verify user is game host
+    - Delete question from database
+    - Return success response with deletedId
+    - _Requirements: 3.3, 3.5, 8.1_
+  - [x] 5.5 Create PATCH /api/games/[gameId]/questions/reorder route
+    - Create `app/api/games/[gameId]/questions/reorder/route.ts`
+    - Parse request body with ordered questionIds array
+    - Check game state using canEditQuestions
+    - Verify user is game host
+    - Update orderIndex for each question in transaction
+    - Return success response with reordered count
+    - _Requirements: 3.4, 3.5, 8.1_
+  - [ ]\* 5.6 Write unit tests for question editing endpoints
+    - Test successful question update
+    - Test successful question deletion
+    - Test successful question reordering
+    - Test state error responses for active games
+    - Test authorization error responses
+    - Test validation error responses
+    - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 8.1_
+
+- [ ] 6. Implement game reset API endpoint
+  - [x] 6.1 Create POST /api/games/[gameId]/reset route
+    - Create `app/api/games/[gameId]/reset/route.ts`
+    - Verify user is game host using verifyGameHost
+    - Begin database transaction
+    - _Requirements: 4.1, 8.2_
+  - [x] 6.2 Add database operations for game reset
+    - Delete all guesses for game
+    - Delete all bets for game
+    - Reset all player scores to 0
+    - Remove all players from game
+    - Get first question ID for game
+    - Reset currentQuestionId to first question
+    - Reset game phase to "guessing"
+    - _Requirements: 4.3, 4.4, 4.5, 4.6, 4.7, 4.8_
+  - [x] 6.3 Add transaction commit and error handling
+    - Commit transaction on success
+    - Rollback transaction on any error
+    - Return success response with gameId
+    - Return error response on failure
+    - _Requirements: 6.1, 6.2_
+  - [ ]\* 6.4 Write property test for reset preserves questions
+    - **Property 9: Reset Preserves Questions**
+    - **Validates: Requirements 4.1, 4.2**
+  - [ ]\* 6.5 Write property test for reset clears game data
+    - **Property 10: Reset Clears Game Data**
+    - **Validates: Requirements 4.3, 4.4, 4.5, 4.8**
+  - [ ]\* 6.6 Write property test for reset restores initial state
+    - **Property 11: Reset Restores Initial State**
+    - **Validates: Requirements 4.6, 4.7**
+  - [ ]\* 6.7 Write property test for reset atomicity
+    - **Property 12: Reset Atomicity**
+    - **Validates: Requirements 6.1, 6.2, 6.3**
+  - [ ]\* 6.8 Write unit tests for reset endpoint
+    - Test successful reset with players and guesses
+    - Test successful reset with no players
+    - Test authorization error for non-host
+    - Test transaction rollback on database error
+    - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 6.1, 6.2, 8.2_
+
+- [x] 7. Checkpoint - Ensure all API tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ] 8. Implement UI components for question management
+  - [x] 8.1 Create QuestionListEditor component
+    - Create `app/host/[gameId]/components/QuestionListEditor.tsx`
+    - Accept gameId, questions, isActive, onQuestionsChange props
+    - Display all questions in a list with text and answer
+    - Implement inline editing controls for text and answer
+    - Add delete button for each question
+    - Disable all controls when isActive is true
+    - Show visual feedback during save operations
+    - _Requirements: 5.1, 5.2, 5.3_
+  - [x] 8.2 Add drag-and-drop reordering to QuestionListEditor
+    - Implement drag-and-drop functionality for question reordering
+    - Call PATCH /api/games/[gameId]/questions/reorder on drop
+    - Update local state optimistically
+    - Revert on API error
+    - _Requirements: 3.4, 5.1_
+  - [x] 8.3 Create FileUploadButton component
+    - Create `app/host/[gameId]/components/FileUploadButton.tsx`
+    - Accept gameId, onImportComplete, disabled props
+    - Add file input with accept=".csv,.json"
+    - Show upload progress indicator during upload
+    - Display validation errors with question indices
+    - Show success message with import count
+    - Call POST /api/games/[gameId]/questions/import
+    - _Requirements: 1.1, 1.2, 1.4, 5.4, 5.5_
+  - [x] 8.4 Create GameResetButton component
+    - Create `app/host/[gameId]/components/GameResetButton.tsx`
+    - Accept gameId, onResetComplete props
+    - Show confirmation dialog before reset
+    - Display loading state during reset operation
+    - Show success/error feedback after reset
+    - Call POST /api/games/[gameId]/reset
+    - _Requirements: 4.1, 6.4_
+  - [ ]\* 8.5 Write unit tests for UI components
+    - Test QuestionListEditor renders questions correctly
+    - Test inline editing triggers API calls
+    - Test delete button triggers API call
+    - Test drag-and-drop reordering
+    - Test FileUploadButton file upload flow
+    - Test GameResetButton confirmation dialog
+    - Test disabled states when game is active
+    - _Requirements: 3.5, 5.1, 5.2, 5.3, 5.4, 5.5_
+
+- [ ] 9. Integrate components into host dashboard
+  - [x] 9.1 Update host dashboard page to include question management
+    - Update `app/host/[gameId]/page.tsx` to import new components
+    - Add QuestionListEditor component to page
+    - Add FileUploadButton component to page
+    - Add GameResetButton component to page
+    - Fetch game state to determine isActive prop
+    - Implement onQuestionsChange callback to refetch questions
+    - Implement onImportComplete callback to refetch questions
+    - Implement onResetComplete callback to refetch game state
+    - _Requirements: 5.1, 5.4, 5.5, 5.6_
+  - [x] 9.2 Add error boundary and loading states
+    - Add error boundary to handle component errors gracefully
+    - Add loading states while fetching game data
+    - Add loading states during API operations
+    - _Requirements: 5.5, 5.6_
+  - [ ]\* 9.3 Write integration tests for host dashboard
+    - Test full question import flow
+    - Test full question edit flow
+    - Test full question delete flow
+    - Test full question reorder flow
+    - Test full game reset flow
+    - Test error handling for all flows
+    - _Requirements: 1.1, 1.2, 3.1, 3.2, 3.3, 3.4, 4.1_
+
+- [ ] 10. Add authorization property test
+  - [ ]\* 10.1 Write property test for authorization
+    - **Property 15: Authorization for Management Operations**
+    - **Validates: Requirements 8.1, 8.2, 8.3, 8.4**
+
+- [x] 11. Final checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+## Notes
+
+- Tasks marked with `*` are optional and can be skipped for faster MVP
+- Each task references specific requirements for traceability
+- Checkpoints ensure incremental validation at reasonable breaks
+- Property tests validate universal correctness properties from the design document
+- Unit tests validate specific examples, edge cases, and error conditions
+- The implementation follows a bottom-up approach: utilities first, then API routes, then UI components, then integration
+- All multi-step operations (import, reset) use database transactions for atomicity
+- State-based access control prevents question editing during active gameplay
+- Authorization checks ensure only game hosts can perform management operations

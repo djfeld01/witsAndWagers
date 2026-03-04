@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, vi } from "vitest";
-import { POST } from "../../../join/[code]/route";
+import { POST } from "./route";
 
 // Mock the database client
 vi.mock("@/lib/db/client", () => ({

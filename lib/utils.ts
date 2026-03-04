@@ -231,15 +231,15 @@ export function validateGameCreation(
     };
   }
 
-  // Validate questions array exists and has at least one question
-  if (!input.questions || input.questions.length === 0) {
+  // Validate questions array exists (can be empty)
+  if (!input.questions || !Array.isArray(input.questions)) {
     return {
       valid: false,
-      error: "At least one question is required",
+      error: "Questions array is required",
     };
   }
 
-  // Validate each question
+  // Validate each question (if any exist)
   for (let i = 0; i < input.questions.length; i++) {
     const question = input.questions[i];
     const questionNum = i + 1;

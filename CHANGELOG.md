@@ -2,6 +2,50 @@
 
 ## [Unreleased]
 
+### Added - Game Management Features
+
+#### Simplified Game Creation
+
+- Create games with just a title (no questions required initially)
+- Add questions later using bulk import or manual entry
+- Streamlined workflow for faster game setup
+
+#### Bulk Question Import
+
+- Import questions from CSV files
+- Import questions from JSON files
+- Validation before import (fail-fast with detailed errors)
+- Transaction safety (all or nothing import)
+- Sample CSV file included (`sample-questions.csv`)
+
+#### Question Editing
+
+- Inline editing of question text and answers
+- Delete individual questions
+- Drag-and-drop reordering
+- State-based access control (editing disabled when game is active)
+- Visual feedback during operations
+
+#### Game Reset
+
+- Reset game to initial state for practice runs
+- Removes all players, guesses, and bets
+- Preserves all questions
+- Confirmation dialog to prevent accidents
+- Perfect for testing before presentations
+
+#### Authorization & Security
+
+- Host-only access to management features
+- State-based editing restrictions
+- Transaction safety for data integrity
+
+### Changed
+
+- Game creation now allows empty questions array
+- Host dashboard shows Question Management section by default
+- Updated validation to support games without initial questions
+
 ### Added - Display View Improvements
 
 #### Navigation Controls

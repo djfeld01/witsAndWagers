@@ -152,7 +152,7 @@ describe("POST /api/games", () => {
     expect(data.error.message).toBe("Game title is required");
   });
 
-  test("rejects request with empty questions array", async () => {
+  test("accepts request with empty questions array", async () => {
     const requestBody = {
       title: "Test Game",
       questions: [],
@@ -166,9 +166,10 @@ describe("POST /api/games", () => {
     const response = await POST(request);
     const data = await response.json();
 
-    expect(response.status).toBe(400);
-    expect(data.error.code).toBe("VALIDATION_ERROR");
-    expect(data.error.message).toBe("At least one question is required");
+    expect(response.status).toBe(201);
+    expect(data.gameId).toBeDefined();
+    expect(data.joinCode).toBeDefined();
+    expect(data.joinUrl).toBeDefined();
   });
 
   test("rejects request with missing question text", async () => {

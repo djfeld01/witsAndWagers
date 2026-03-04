@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { generateQRCode } from "@/lib/qrcode";
 import { useGameChannel } from "@/lib/hooks/useGameChannel";
+import { QuestionListEditor } from "./components/QuestionListEditor";
+import { FileUploadButton } from "./components/FileUploadButton";
+import { GameResetButton } from "./components/GameResetButton";
 
 interface GameState {
   game: {
@@ -51,6 +54,21 @@ export default function HostDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAdvancing, setIsAdvancing] = useState(false);
+  const [isGameActive, setIsGameActive] = useState(false);
+  const [showQuestionManagement, setShowQuestionManagement] = useState(true);
+
+  // Check if game is active (has players or not in initial state)
+  useEffect(() => {
+    if (gameState) {
+      const hasPlayers = gameState.players.length > 0;
+      const notFirstQuestion =
+        gameState.questions.length > 0 &&
+        gameState.game.currentQuestionId !== gameState.questions[0]?.id;
+      const notGuessingPhase = gameState.game.currentPhase !== "guessing";
+
+      setIsGameActive(hasPlayers || notFirstQuestion || notGuessingPhase);
+    }
+  }, [gameState]);
 
   // Advance to next phase
   const advancePhase = async () => {
@@ -253,6 +271,53 @@ export default function HostDashboardPage() {
               Open Display View
             </a>
           </div>
+        </div>
+
+        {/* Question Management Section */}
+        <div className="bg-white p-6 rounded-lg shadow mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-gray-900">
+              Question Management
+            </h2>
+            <button
+              onClick={() => setShowQuestionManagement(!showQuestionManagement)}
+              className="text-blue-600 hover:text-blue-700 font-medium"
+            >
+              {showQuestionManagement ? "Hide" : "Show"}
+            </button>
+          </div>
+
+          {showQuestionManagement && (
+            <div className="space-y-6">
+              <div className="flex gap-4">
+                <FileUploadButton
+                  gameId={gameId}
+                  onImportComplete={() => fetchGameState()}
+                  disabled={isGameActive}
+                />
+                <GameResetButton
+                  gameId={gameId}
+                  onResetComplete={() => fetchGameState()}
+                />
+              </div>
+
+              <QuestionListEditor
+                gameId={gameId}
+                questions={gameState.questions.map((q) => ({
+                  id: q.id,
+                  gameId: gameId,
+                  orderIndex: q.order,
+                  text: q.text,
+                  subText: q.subText,
+                  correctAnswer: q.correctAnswer,
+                  answerFormat: q.answerFormat,
+                  followUpNotes: q.followUpNotes,
+                }))}
+                isActive={isGameActive}
+                onQuestionsChange={() => fetchGameState()}
+              />
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

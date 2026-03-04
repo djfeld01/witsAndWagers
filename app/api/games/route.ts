@@ -67,22 +67,22 @@ export async function POST(request: NextRequest) {
         currentPhase: "guessing",
       });
 
-      // Insert questions
-      const questionValues = body.questions.map((q: any, index: number) => ({
-        id: randomUUID(),
-        gameId: gameId,
-        orderIndex: index,
-        text: q.text,
-        subText: q.subText || null,
-        correctAnswer: String(q.correctAnswer),
-        answerFormat: (q.answerFormat || "plain") as AnswerFormat,
-        followUpNotes: q.followUpNotes || null,
-      }));
+      // Insert questions (if any)
+      if (body.questions && body.questions.length > 0) {
+        const questionValues = body.questions.map((q: any, index: number) => ({
+          id: randomUUID(),
+          gameId: gameId,
+          orderIndex: index,
+          text: q.text,
+          subText: q.subText || null,
+          correctAnswer: String(q.correctAnswer),
+          answerFormat: (q.answerFormat || "plain") as AnswerFormat,
+          followUpNotes: q.followUpNotes || null,
+        }));
 
-      await tx.insert(questions).values(questionValues);
+        await tx.insert(questions).values(questionValues);
 
-      // Set the first question as current question
-      if (questionValues.length > 0) {
+        // Set the first question as current question
         await tx
           .update(games)
           .set({ currentQuestionId: questionValues[0].id })

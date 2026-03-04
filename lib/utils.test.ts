@@ -537,15 +537,14 @@ describe("validateGameCreation", () => {
     expect(result.error).toBe("Game title is required");
   });
 
-  test("rejects empty questions array", () => {
+  test("accepts empty questions array", () => {
     const input = {
       title: "My Game",
       questions: [],
     };
 
     const result = validateGameCreation(input);
-    expect(result.valid).toBe(false);
-    expect(result.error).toBe("At least one question is required");
+    expect(result.valid).toBe(true);
   });
 
   test("rejects missing question text", () => {

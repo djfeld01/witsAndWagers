@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.98.0",
+    "csv-parse": "^6.1.0",
     "drizzle-orm": "^0.45.1",
     "nanoid": "^5.1.6",
     "next": "16.1.6",
