@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useGameChannel } from "@/lib/hooks/useGameChannel";
 import { formatNumber } from "@/lib/format";
+import { getResponsiveTextStyle } from "@/lib/display/responsiveText";
+import SubmissionCounter from "./components/SubmissionCounter";
+import FinalResultsScreen from "./components/FinalResultsScreen";
 
 interface GameState {
   game: {
@@ -169,6 +172,27 @@ export default function DisplayViewPage() {
   );
   const topPlayers = sortedPlayers.slice(0, 3);
 
+  // Calculate submission counts
+  const submittedGuesses = gameState.guesses.filter(
+    (g) => g.questionId === gameState.game.currentQuestionId,
+  ).length;
+
+  const submittedBets = gameState.bets.filter(
+    (b) => b.questionId === gameState.game.currentQuestionId,
+  ).length;
+
+  const totalPlayers = gameState.players.length;
+
+  // Detect game completion
+  const isLastQuestion =
+    currentQuestion &&
+    gameState.questions.length > 0 &&
+    currentQuestion.order ===
+      Math.max(...gameState.questions.map((q) => q.order));
+
+  const showFinalResults =
+    gameState.game.currentPhase === "reveal" && isLastQuestion;
+
   // Get guesses for betting/reveal phase
   const currentGuesses = gameState.guesses
     .filter((g) => g.questionId === gameState.game.currentQuestionId)
@@ -204,6 +228,17 @@ export default function DisplayViewPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-900 to-blue-950 text-white">
+      {/* Submission Counter */}
+      <SubmissionCounter
+        phase={gameState.game.currentPhase}
+        submittedCount={
+          gameState.game.currentPhase === "guessing"
+            ? submittedGuesses
+            : submittedBets
+        }
+        totalCount={totalPlayers}
+      />
+
       {/* Hidden Navigation Toggle - Click bottom-left corner to reveal */}
       <button
         onClick={() => setShowNavigation(!showNavigation)}
@@ -317,7 +352,10 @@ export default function DisplayViewPage() {
                         key={guess.id}
                         className="bg-white backdrop-blur-sm p-12 rounded-xl text-center border-4 border-blue-600"
                       >
-                        <div className="text-7xl font-bold mb-3 text-gray-900">
+                        <div
+                          className="font-bold mb-3 text-gray-900"
+                          style={getResponsiveTextStyle(guess.numericGuess)}
+                        >
                           {formatNumber(
                             guess.numericGuess,
                             currentQuestion.answerFormat,
@@ -339,87 +377,101 @@ export default function DisplayViewPage() {
 
             {/* Reveal Phase - Show Answer and Winners */}
             {gameState.game.currentPhase === "reveal" && (
-              <div>
-                {/* Question (smaller) */}
-                <div className="text-center mb-12">
-                  <div className="text-4xl font-bold mb-4">
-                    {currentQuestion.text}
-                  </div>
-                  {currentQuestion.subText && (
-                    <div className="text-2xl text-blue-200">
-                      {currentQuestion.subText}
+              <>
+                {showFinalResults ? (
+                  <FinalResultsScreen players={sortedPlayers} gameId={gameId} />
+                ) : (
+                  <div>
+                    {/* Question (smaller) */}
+                    <div className="text-center mb-12">
+                      <div className="text-4xl font-bold mb-4">
+                        {currentQuestion.text}
+                      </div>
+                      {currentQuestion.subText && (
+                        <div className="text-2xl text-blue-200">
+                          {currentQuestion.subText}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
 
-                {/* Correct Answer */}
-                <div className="text-center mb-12">
-                  <div className="text-2xl text-green-300 mb-4">
-                    Correct Answer
-                  </div>
-                  <div className="text-8xl font-bold text-green-400 mb-8">
-                    {formatNumber(
-                      parseFloat(currentQuestion.correctAnswer),
-                      currentQuestion.answerFormat,
+                    {/* Correct Answer */}
+                    <div className="text-center mb-12">
+                      <div className="text-2xl text-green-300 mb-4">
+                        Correct Answer
+                      </div>
+                      <div
+                        className="font-bold text-green-400 mb-8"
+                        style={getResponsiveTextStyle(
+                          parseFloat(currentQuestion.correctAnswer),
+                        )}
+                      >
+                        {formatNumber(
+                          parseFloat(currentQuestion.correctAnswer),
+                          currentQuestion.answerFormat,
+                        )}
+                      </div>
+                      {currentQuestion.followUpNotes && (
+                        <div className="bg-blue-800 bg-opacity-50 backdrop-blur-sm p-6 rounded-xl max-w-4xl mx-auto">
+                          <p className="text-2xl text-blue-100">
+                            {currentQuestion.followUpNotes}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Guesses with Winner Highlighted */}
+                    {currentGuesses.length > 0 && (
+                      <div className="mb-12">
+                        <div className="text-3xl font-bold text-center mb-8">
+                          All Guesses
+                        </div>
+                        <div className="grid grid-cols-3 gap-8 max-w-6xl mx-auto">
+                          {currentGuesses.map((guess) => (
+                            <div
+                              key={guess.id}
+                              className={`p-12 rounded-xl text-center border-4 ${
+                                guess.id === closestGuessId
+                                  ? "bg-green-500 bg-opacity-30 border-green-400 scale-110"
+                                  : "bg-white border-gray-400"
+                              }`}
+                            >
+                              {guess.id === closestGuessId && (
+                                <div className="text-2xl text-green-300 mb-3">
+                                  ⭐ WINNER ⭐
+                                </div>
+                              )}
+                              <div
+                                className={`font-bold mb-3 ${
+                                  guess.id === closestGuessId
+                                    ? "text-white"
+                                    : "text-gray-900"
+                                }`}
+                                style={getResponsiveTextStyle(
+                                  guess.numericGuess,
+                                )}
+                              >
+                                {formatNumber(
+                                  guess.numericGuess,
+                                  currentQuestion.answerFormat,
+                                )}
+                              </div>
+                              <div
+                                className={`text-xl ${
+                                  guess.id === closestGuessId
+                                    ? "text-green-200"
+                                    : "text-gray-700"
+                                }`}
+                              >
+                                {guess.playerName}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     )}
                   </div>
-                  {currentQuestion.followUpNotes && (
-                    <div className="bg-blue-800 bg-opacity-50 backdrop-blur-sm p-6 rounded-xl max-w-4xl mx-auto">
-                      <p className="text-2xl text-blue-100">
-                        {currentQuestion.followUpNotes}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Guesses with Winner Highlighted */}
-                {currentGuesses.length > 0 && (
-                  <div className="mb-12">
-                    <div className="text-3xl font-bold text-center mb-8">
-                      All Guesses
-                    </div>
-                    <div className="grid grid-cols-3 gap-8 max-w-6xl mx-auto">
-                      {currentGuesses.map((guess) => (
-                        <div
-                          key={guess.id}
-                          className={`p-12 rounded-xl text-center border-4 ${
-                            guess.id === closestGuessId
-                              ? "bg-green-500 bg-opacity-30 border-green-400 scale-110"
-                              : "bg-white border-gray-400"
-                          }`}
-                        >
-                          {guess.id === closestGuessId && (
-                            <div className="text-2xl text-green-300 mb-3">
-                              ⭐ WINNER ⭐
-                            </div>
-                          )}
-                          <div
-                            className={`text-7xl font-bold mb-3 ${
-                              guess.id === closestGuessId
-                                ? "text-white"
-                                : "text-gray-900"
-                            }`}
-                          >
-                            {formatNumber(
-                              guess.numericGuess,
-                              currentQuestion.answerFormat,
-                            )}
-                          </div>
-                          <div
-                            className={`text-xl ${
-                              guess.id === closestGuessId
-                                ? "text-green-200"
-                                : "text-gray-700"
-                            }`}
-                          >
-                            {guess.playerName}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
                 )}
-              </div>
+              </>
             )}
           </div>
         )}
