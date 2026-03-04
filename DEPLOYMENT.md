@@ -1,4 +1,4 @@
-# Deploying Wits & Wagers to Vercel
+# Deploying #Trivia to Vercel
 
 ## Prerequisites
 

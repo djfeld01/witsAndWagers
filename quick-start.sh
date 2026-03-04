@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🎮 Wits & Wagers - Quick Start"
+echo "🎮 #Trivia - Quick Start"
 echo "================================"
 echo ""
 

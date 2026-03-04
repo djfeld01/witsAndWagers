@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🚀 Deploying Wits & Wagers to Vercel"
+echo "🚀 Deploying #Trivia to Vercel"
 echo "===================================="
 echo ""
 

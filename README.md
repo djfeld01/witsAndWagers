@@ -1,6 +1,6 @@
-# Wits and Wagers Game Show
+# #Trivia Game Show
 
-A real-time multiplayer trivia game application based on Wits and Wagers. Players submit numerical guesses to trivia questions and place bets on which guess is closest to the correct answer.
+A real-time multiplayer trivia game application. Players submit numerical guesses to trivia questions and place bets on which guess is closest to the correct answer.
 
 ## Tech Stack
 

@@ -1,4 +1,4 @@
-# Getting Started with Wits & Wagers
+# Getting Started with #Trivia
 
 ## Quick Start Options
 
