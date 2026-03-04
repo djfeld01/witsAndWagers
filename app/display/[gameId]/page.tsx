@@ -7,11 +7,13 @@ import { formatNumber } from "@/lib/format";
 import { getResponsiveTextStyle } from "@/lib/display/responsiveText";
 import SubmissionCounter from "./components/SubmissionCounter";
 import FinalResultsScreen from "./components/FinalResultsScreen";
+import { generateQRCode } from "@/lib/qrcode";
 
 interface GameState {
   game: {
     id: string;
     title: string;
+    joinCode: string;
     currentPhase: "guessing" | "betting" | "reveal";
     currentQuestionId: string | null;
   };
@@ -54,6 +56,7 @@ export default function DisplayViewPage() {
   const [showNavigation, setShowNavigation] = useState(false);
   const [isAdvancing, setIsAdvancing] = useState(false);
   const [leaderboardExpanded, setLeaderboardExpanded] = useState(true);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
 
   // Fetch game state
   const fetchGameState = async () => {
@@ -146,9 +149,17 @@ export default function DisplayViewPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameId]);
 
+  // Generate QR code
+  useEffect(() => {
+    if (gameState?.game.joinCode) {
+      const joinUrl = `${window.location.origin}/join/${gameState.game.joinCode}`;
+      generateQRCode(joinUrl).then(setQrCodeUrl);
+    }
+  }, [gameState?.game.joinCode]);
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 to-purple-900 flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-br from-blue-900 to-purple-900 flex items-center justify-center">
         <div className="text-3xl text-white">Loading...</div>
       </div>
     );
@@ -156,7 +167,7 @@ export default function DisplayViewPage() {
 
   if (!gameState) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 to-purple-900 flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-br from-blue-900 to-purple-900 flex items-center justify-center">
         <div className="text-3xl text-white">Game not found</div>
       </div>
     );
@@ -227,7 +238,7 @@ export default function DisplayViewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-900 to-blue-950 text-white">
+    <div className="min-h-screen bg-linear-to-br from-red-900 to-blue-950 text-white">
       {/* Submission Counter */}
       <SubmissionCounter
         phase={gameState.game.currentPhase}
@@ -294,7 +305,47 @@ export default function DisplayViewPage() {
       <div className="max-w-7xl mx-auto px-8 py-12">
         {!currentQuestion ? (
           <div className="text-center py-20">
-            <div className="text-4xl mb-8">Waiting for game to start...</div>
+            <div className="text-6xl font-bold mb-12">Join Now!</div>
+
+            {/* QR Code */}
+            {qrCodeUrl && (
+              <div className="mb-8 flex justify-center">
+                <img
+                  src={qrCodeUrl}
+                  alt="Join Game QR Code"
+                  className="w-64 h-64 bg-white p-4 rounded-xl"
+                />
+              </div>
+            )}
+
+            {/* Join Code */}
+            <div className="mb-12">
+              <div className="text-2xl text-blue-200 mb-4">Join Code:</div>
+              <div className="text-8xl font-bold font-mono bg-white text-blue-900 px-12 py-6 rounded-xl inline-block">
+                {gameState.game.joinCode}
+              </div>
+            </div>
+
+            {/* Player Count */}
+            <div className="text-3xl text-blue-200 mb-12">
+              {gameState.players.length}{" "}
+              {gameState.players.length === 1 ? "player" : "players"} ready
+            </div>
+
+            {/* Start Game Button */}
+            <button
+              onClick={advancePhase}
+              disabled={isAdvancing || gameState.questions.length === 0}
+              className="bg-tea-green-500 hover:bg-tea-green-600 disabled:bg-gray-600 text-white text-4xl font-bold py-6 px-16 rounded-xl transition-colors disabled:cursor-not-allowed"
+            >
+              {isAdvancing ? "Starting..." : "Start Game"}
+            </button>
+
+            {gameState.questions.length === 0 && (
+              <div className="text-xl text-yellow-300 mt-6">
+                Add questions on the host page to start the game
+              </div>
+            )}
           </div>
         ) : (
           <div className="space-y-8">

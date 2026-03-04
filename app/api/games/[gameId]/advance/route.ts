@@ -239,6 +239,35 @@ export async function POST(
           currentQuestionId: nextQuestionId,
         })
         .where(eq(games.id, gameId));
+    } else if (!currentQuestionId && targetPhase === "guessing") {
+      // Starting the game for the first time - set first question
+      const allQuestions = await db
+        .select()
+        .from(questions)
+        .where(eq(questions.gameId, gameId))
+        .orderBy(asc(questions.orderIndex));
+
+      if (allQuestions.length === 0) {
+        return NextResponse.json(
+          {
+            error: {
+              code: "VALIDATION_ERROR",
+              message: "No questions found for this game",
+            },
+          },
+          { status: 400 },
+        );
+      }
+
+      const firstQuestionId = allQuestions[0].id;
+
+      await db
+        .update(games)
+        .set({
+          currentPhase: targetPhase,
+          currentQuestionId: firstQuestionId,
+        })
+        .where(eq(games.id, gameId));
     } else {
       await db
         .update(games)
