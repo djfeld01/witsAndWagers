@@ -92,18 +92,24 @@ export async function POST(
     const currentPhase = game[0].currentPhase;
     const currentQuestionId = game[0].currentQuestionId;
 
-    // Validate phase transition follows state machine
-    const allowedTransitions = VALID_TRANSITIONS[currentPhase];
-    if (!allowedTransitions || !allowedTransitions.includes(targetPhase)) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "INVALID_PHASE",
-            message: `Cannot transition from ${currentPhase} to ${targetPhase}. Valid transitions: ${allowedTransitions?.join(", ") || "none"}`,
+    // Special case: Starting the game for the first time
+    // Allow "guessing" -> "guessing" transition when no question is set
+    const isStartingGame = !currentQuestionId && targetPhase === "guessing";
+
+    // Validate phase transition follows state machine (unless starting game)
+    if (!isStartingGame) {
+      const allowedTransitions = VALID_TRANSITIONS[currentPhase];
+      if (!allowedTransitions || !allowedTransitions.includes(targetPhase)) {
+        return NextResponse.json(
+          {
+            error: {
+              code: "INVALID_PHASE",
+              message: `Cannot transition from ${currentPhase} to ${targetPhase}. Valid transitions: ${allowedTransitions?.join(", ") || "none"}`,
+            },
           },
-        },
-        { status: 400 },
-      );
+          { status: 400 },
+        );
+      }
     }
 
     // If advancing to reveal, calculate scores
