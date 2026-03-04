@@ -225,6 +225,53 @@ export default function DisplayViewPage() {
     })
     .sort((a, b) => a.numericGuess - b.numericGuess);
 
+  // Calculate responsive grid layout based on player count
+  // Total boxes = player guesses + 1 (zero option)
+  const totalBoxes = currentGuesses.length + 1;
+
+  // Determine grid columns and sizing based on total boxes
+  const getGridConfig = () => {
+    if (totalBoxes <= 4) {
+      return {
+        cols: "grid-cols-2 md:grid-cols-3",
+        padding: "p-12",
+        numberSize: "text-7xl",
+        nameSize: "text-xl",
+        gap: "gap-8",
+        maxWidth: "max-w-4xl",
+      };
+    } else if (totalBoxes <= 9) {
+      return {
+        cols: "grid-cols-3 md:grid-cols-4",
+        padding: "p-10",
+        numberSize: "text-6xl",
+        nameSize: "text-lg",
+        gap: "gap-6",
+        maxWidth: "max-w-6xl",
+      };
+    } else if (totalBoxes <= 16) {
+      return {
+        cols: "grid-cols-3 md:grid-cols-4 lg:grid-cols-5",
+        padding: "p-8",
+        numberSize: "text-5xl",
+        nameSize: "text-base",
+        gap: "gap-4",
+        maxWidth: "max-w-7xl",
+      };
+    } else {
+      return {
+        cols: "grid-cols-4 md:grid-cols-5 lg:grid-cols-6",
+        padding: "p-6",
+        numberSize: "text-4xl",
+        nameSize: "text-sm",
+        gap: "gap-3",
+        maxWidth: "max-w-7xl",
+      };
+    }
+  };
+
+  const gridConfig = getGridConfig();
+
   // Find closest guess for reveal phase
   let closestGuessId: string | null = null;
   if (gameState.game.currentPhase === "reveal" && currentQuestion) {
@@ -394,13 +441,19 @@ export default function DisplayViewPage() {
                   <div className="text-3xl font-bold text-center mb-8">
                     Place Your Bets!
                   </div>
-                  <div className="grid grid-cols-3 gap-8 max-w-6xl mx-auto">
+                  <div
+                    className={`grid ${gridConfig.cols} ${gridConfig.gap} ${gridConfig.maxWidth} mx-auto`}
+                  >
                     {/* Zero option */}
-                    <div className="bg-gray-200 backdrop-blur-sm p-12 rounded-xl text-center border-4 border-gray-600">
-                      <div className="text-7xl font-bold mb-3 text-gray-900">
+                    <div
+                      className={`bg-gray-200 backdrop-blur-sm ${gridConfig.padding} rounded-xl text-center border-4 border-gray-600`}
+                    >
+                      <div
+                        className={`${gridConfig.numberSize} font-bold mb-3 text-gray-900`}
+                      >
                         0
                       </div>
-                      <div className="text-lg text-gray-700">
+                      <div className={`${gridConfig.nameSize} text-gray-700`}>
                         Always available
                       </div>
                     </div>
@@ -409,10 +462,10 @@ export default function DisplayViewPage() {
                     {currentGuesses.map((guess) => (
                       <div
                         key={guess.id}
-                        className="bg-white backdrop-blur-sm p-12 rounded-xl text-center border-4 border-blue-600"
+                        className={`bg-white backdrop-blur-sm ${gridConfig.padding} rounded-xl text-center border-4 border-blue-600`}
                       >
                         <div
-                          className="font-bold mb-3 text-gray-900"
+                          className={`font-bold mb-3 text-gray-900 ${gridConfig.numberSize}`}
                           style={getResponsiveTextStyle(guess.numericGuess)}
                         >
                           {formatNumber(
@@ -420,7 +473,7 @@ export default function DisplayViewPage() {
                             currentQuestion.answerFormat,
                           )}
                         </div>
-                        <div className="text-xl text-gray-700">
+                        <div className={`${gridConfig.nameSize} text-gray-700`}>
                           {guess.playerName}
                         </div>
                       </div>
@@ -484,23 +537,27 @@ export default function DisplayViewPage() {
                         <div className="text-3xl font-bold text-center mb-8">
                           All Guesses
                         </div>
-                        <div className="grid grid-cols-3 gap-8 max-w-6xl mx-auto">
+                        <div
+                          className={`grid ${gridConfig.cols} ${gridConfig.gap} ${gridConfig.maxWidth} mx-auto`}
+                        >
                           {currentGuesses.map((guess) => (
                             <div
                               key={guess.id}
-                              className={`p-12 rounded-xl text-center border-4 ${
+                              className={`${gridConfig.padding} rounded-xl text-center border-4 ${
                                 guess.id === closestGuessId
-                                  ? "bg-green-500 bg-opacity-30 border-green-400 scale-110"
+                                  ? "bg-green-500 bg-opacity-30 border-green-400 scale-105"
                                   : "bg-white border-gray-400"
                               }`}
                             >
                               {guess.id === closestGuessId && (
-                                <div className="text-2xl text-green-300 mb-3">
+                                <div
+                                  className={`${gridConfig.nameSize} text-green-300 mb-2`}
+                                >
                                   ⭐ WINNER ⭐
                                 </div>
                               )}
                               <div
-                                className={`font-bold mb-3 ${
+                                className={`font-bold mb-2 ${gridConfig.numberSize} ${
                                   guess.id === closestGuessId
                                     ? "text-white"
                                     : "text-gray-900"
@@ -515,7 +572,7 @@ export default function DisplayViewPage() {
                                 )}
                               </div>
                               <div
-                                className={`text-xl ${
+                                className={`${gridConfig.nameSize} ${
                                   guess.id === closestGuessId
                                     ? "text-green-200"
                                     : "text-gray-700"
