@@ -104,7 +104,7 @@ export default function HostDashboardPage() {
   };
 
   // Subscribe to realtime updates
-  useGameChannel({
+  const { isConnected, isReconnecting } = useGameChannel({
     gameId,
     onPlayerJoined: () => {
       fetchGameState();
@@ -122,6 +122,18 @@ export default function HostDashboardPage() {
       fetchGameState();
     },
   });
+
+  // Fallback polling when realtime is not connected
+  useEffect(() => {
+    if (!isConnected && !isReconnecting) {
+      const interval = setInterval(() => {
+        fetchGameState();
+      }, 3000); // Poll every 3 seconds
+
+      return () => clearInterval(interval);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isConnected, isReconnecting]);
 
   // Generate QR code
   useEffect(() => {

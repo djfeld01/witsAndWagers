@@ -58,7 +58,6 @@ export default function PlayerViewPage() {
   const [guessSubmitted, setGuessSubmitted] = useState(false);
 
   // Bet submission state
-  const [selectedGuessId, setSelectedGuessId] = useState<string | null>(null);
   const [isSubmittingBet, setIsSubmittingBet] = useState(false);
   const [betSubmitted, setBetSubmitted] = useState(false);
 
@@ -87,7 +86,6 @@ export default function PlayerViewPage() {
       setGuessSubmitted(false);
       setBetSubmitted(false);
       setGuess("");
-      setSelectedGuessId(null);
     },
     onScoreUpdate: () => {
       fetchGameState();
@@ -96,6 +94,18 @@ export default function PlayerViewPage() {
       fetchGameState();
     },
   });
+
+  // Fallback polling when realtime is not connected
+  useEffect(() => {
+    if (!isConnected && !isReconnecting) {
+      const interval = setInterval(() => {
+        fetchGameState();
+      }, 3000); // Poll every 3 seconds
+
+      return () => clearInterval(interval);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isConnected, isReconnecting]);
 
   // Load player info from local storage
   useEffect(() => {
@@ -285,11 +295,11 @@ export default function PlayerViewPage() {
         </div>
       </div>
 
-      {/* Connection Status */}
-      {!isConnected && (
-        <div className="bg-yellow-100 border-b border-yellow-200 px-4 py-2">
-          <div className="max-w-4xl mx-auto text-sm text-yellow-800">
-            {isReconnecting ? "Reconnecting..." : "Connection lost"}
+      {/* Connection Status - Only show if reconnecting */}
+      {isReconnecting && (
+        <div className="bg-blue-100 border-b border-blue-200 px-4 py-2">
+          <div className="max-w-4xl mx-auto text-sm text-blue-800">
+            Reconnecting...
           </div>
         </div>
       )}
