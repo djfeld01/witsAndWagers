@@ -12,70 +12,70 @@
   --font-mono: var(--font-geist-mono);
 
   /* Custom Color Palette */
-  /* Celadon Green */
-  --color-celadon-50: #eff6ee;
-  --color-celadon-100: #dfeedd;
-  --color-celadon-200: #bfdcbc;
-  --color-celadon-300: #a0cb9a;
-  --color-celadon-400: #80ba78;
-  --color-celadon-500: #60a857;
-  --color-celadon-600: #4d8745;
-  --color-celadon-700: #3a6534;
-  --color-celadon-800: #264323;
-  --color-celadon-900: #132211;
-  --color-celadon-950: #0d180c;
+  /* Vanilla Custard */
+  --color-vanilla-custard-50: #f7f9eb;
+  --color-vanilla-custard-100: #eff3d8;
+  --color-vanilla-custard-200: #dee7b1;
+  --color-vanilla-custard-300: #cedb8a;
+  --color-vanilla-custard-400: #bdcf63;
+  --color-vanilla-custard-500: #adc33c;
+  --color-vanilla-custard-600: #8a9c30;
+  --color-vanilla-custard-700: #687524;
+  --color-vanilla-custard-800: #454e18;
+  --color-vanilla-custard-900: #23270c;
+  --color-vanilla-custard-950: #181b08;
 
-  /* Muted Teal */
-  --color-muted-teal-50: #f0f5f3;
-  --color-muted-teal-100: #e1eae6;
-  --color-muted-teal-200: #c2d6ce;
-  --color-muted-teal-300: #a4c1b5;
-  --color-muted-teal-400: #86ac9c;
-  --color-muted-teal-500: #679884;
-  --color-muted-teal-600: #537969;
-  --color-muted-teal-700: #3e5b4f;
-  --color-muted-teal-800: #293d35;
-  --color-muted-teal-900: #151e1a;
-  --color-muted-teal-950: #0e1512;
+  /* Light Yellow */
+  --color-light-yellow-50: #fbfaea;
+  --color-light-yellow-100: #f7f5d4;
+  --color-light-yellow-200: #eeebaa;
+  --color-light-yellow-300: #e6e17f;
+  --color-light-yellow-400: #ddd755;
+  --color-light-yellow-500: #d5cc2a;
+  --color-light-yellow-600: #aaa422;
+  --color-light-yellow-700: #807b19;
+  --color-light-yellow-800: #555211;
+  --color-light-yellow-900: #2b2908;
+  --color-light-yellow-950: #1e1d06;
 
-  /* Smart Blue */
-  --color-smart-blue-50: #eef1f7;
-  --color-smart-blue-100: #dde3ee;
-  --color-smart-blue-200: #bbc8dd;
-  --color-smart-blue-300: #98accd;
-  --color-smart-blue-400: #7691bc;
-  --color-smart-blue-500: #5475ab;
-  --color-smart-blue-600: #435e89;
-  --color-smart-blue-700: #324667;
-  --color-smart-blue-800: #222f44;
-  --color-smart-blue-900: #111722;
-  --color-smart-blue-950: #0c1018;
+  /* Tea Green */
+  --color-tea-green-50: #f2f7ee;
+  --color-tea-green-100: #e4eedd;
+  --color-tea-green-200: #c9deba;
+  --color-tea-green-300: #aecd98;
+  --color-tea-green-400: #93bd75;
+  --color-tea-green-500: #78ac53;
+  --color-tea-green-600: #608a42;
+  --color-tea-green-700: #486732;
+  --color-tea-green-800: #304521;
+  --color-tea-green-900: #182211;
+  --color-tea-green-950: #11180c;
 
-  /* Vintage Grape */
-  --color-vintage-grape-50: #f3f0f5;
-  --color-vintage-grape-100: #e7e1ea;
-  --color-vintage-grape-200: #cfc2d6;
-  --color-vintage-grape-300: #b7a4c1;
-  --color-vintage-grape-400: #9f86ac;
-  --color-vintage-grape-500: #876798;
-  --color-vintage-grape-600: #6c5379;
-  --color-vintage-grape-700: #513e5b;
-  --color-vintage-grape-800: #36293d;
-  --color-vintage-grape-900: #1b151e;
-  --color-vintage-grape-950: #130e15;
+  /* Tangerine Dream */
+  --color-tangerine-dream-50: #fdeee8;
+  --color-tangerine-dream-100: #faddd1;
+  --color-tangerine-dream-200: #f5bba3;
+  --color-tangerine-dream-300: #f09a75;
+  --color-tangerine-dream-400: #ec7846;
+  --color-tangerine-dream-500: #e75618;
+  --color-tangerine-dream-600: #b94513;
+  --color-tangerine-dream-700: #8a340f;
+  --color-tangerine-dream-800: #5c220a;
+  --color-tangerine-dream-900: #2e1105;
+  --color-tangerine-dream-950: #200c03;
 
-  /* Canary Yellow */
-  --color-canary-yellow-50: #fcfde7;
-  --color-canary-yellow-100: #fafbd0;
-  --color-canary-yellow-200: #f4f7a1;
-  --color-canary-yellow-300: #eff471;
-  --color-canary-yellow-400: #eaf042;
-  --color-canary-yellow-500: #e5ec13;
-  --color-canary-yellow-600: #b7bd0f;
-  --color-canary-yellow-700: #898e0b;
-  --color-canary-yellow-800: #5b5e08;
-  --color-canary-yellow-900: #2e2f04;
-  --color-canary-yellow-950: #202103;
+  /* Reddish Brown */
+  --color-reddish-brown-50: #f8eeed;
+  --color-reddish-brown-100: #f1ddda;
+  --color-reddish-brown-200: #e2bbb6;
+  --color-reddish-brown-300: #d49991;
+  --color-reddish-brown-400: #c6776c;
+  --color-reddish-brown-500: #b85447;
+  --color-reddish-brown-600: #934439;
+  --color-reddish-brown-700: #6e332b;
+  --color-reddish-brown-800: #49221d;
+  --color-reddish-brown-900: #25110e;
+  --color-reddish-brown-950: #1a0c0a;
 }
 
 @media (prefers-color-scheme: dark) {
