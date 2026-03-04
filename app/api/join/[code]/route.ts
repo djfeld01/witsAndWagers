@@ -23,9 +23,11 @@ import { eq } from "drizzle-orm";
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { code: string } },
+  { params }: { params: Promise<{ code: string }> },
 ) {
   try {
+    const { code } = await params;
+
     // Parse request body
     const body = await request.json();
 
@@ -44,7 +46,7 @@ export async function POST(
     }
 
     // Validate join code exists
-    const joinCode = params.code;
+    const joinCode = code;
     const gameResult = await db
       .select({ id: games.id })
       .from(games)

@@ -49,7 +49,11 @@ export async function GET(
       .where(eq(guesses.questionId, questionId));
 
     // Convert guesses to the response format
-    const guessValues = questionGuesses.map((g) => ({
+    const guessValues: Array<{
+      id: string | null;
+      value: number;
+      playerId: string | null;
+    }> = questionGuesses.map((g) => ({
       id: g.id,
       value: parseFloat(g.guess),
       playerId: g.playerId,

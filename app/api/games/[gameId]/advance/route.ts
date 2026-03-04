@@ -108,7 +108,7 @@ export async function POST(
 
     // If advancing to reveal, calculate scores
     let scoreChanges: Record<string, number> | undefined;
-    let closestGuessId: string | undefined;
+    let closestGuessId: string | null | undefined;
 
     if (targetPhase === "reveal") {
       if (!currentQuestionId) {
