@@ -10,6 +10,72 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Custom Color Palette */
+  /* Celadon Green */
+  --color-celadon-50: #eff6ee;
+  --color-celadon-100: #dfeedd;
+  --color-celadon-200: #bfdcbc;
+  --color-celadon-300: #a0cb9a;
+  --color-celadon-400: #80ba78;
+  --color-celadon-500: #60a857;
+  --color-celadon-600: #4d8745;
+  --color-celadon-700: #3a6534;
+  --color-celadon-800: #264323;
+  --color-celadon-900: #132211;
+  --color-celadon-950: #0d180c;
+
+  /* Muted Teal */
+  --color-muted-teal-50: #f0f5f3;
+  --color-muted-teal-100: #e1eae6;
+  --color-muted-teal-200: #c2d6ce;
+  --color-muted-teal-300: #a4c1b5;
+  --color-muted-teal-400: #86ac9c;
+  --color-muted-teal-500: #679884;
+  --color-muted-teal-600: #537969;
+  --color-muted-teal-700: #3e5b4f;
+  --color-muted-teal-800: #293d35;
+  --color-muted-teal-900: #151e1a;
+  --color-muted-teal-950: #0e1512;
+
+  /* Smart Blue */
+  --color-smart-blue-50: #eef1f7;
+  --color-smart-blue-100: #dde3ee;
+  --color-smart-blue-200: #bbc8dd;
+  --color-smart-blue-300: #98accd;
+  --color-smart-blue-400: #7691bc;
+  --color-smart-blue-500: #5475ab;
+  --color-smart-blue-600: #435e89;
+  --color-smart-blue-700: #324667;
+  --color-smart-blue-800: #222f44;
+  --color-smart-blue-900: #111722;
+  --color-smart-blue-950: #0c1018;
+
+  /* Vintage Grape */
+  --color-vintage-grape-50: #f3f0f5;
+  --color-vintage-grape-100: #e7e1ea;
+  --color-vintage-grape-200: #cfc2d6;
+  --color-vintage-grape-300: #b7a4c1;
+  --color-vintage-grape-400: #9f86ac;
+  --color-vintage-grape-500: #876798;
+  --color-vintage-grape-600: #6c5379;
+  --color-vintage-grape-700: #513e5b;
+  --color-vintage-grape-800: #36293d;
+  --color-vintage-grape-900: #1b151e;
+  --color-vintage-grape-950: #130e15;
+
+  /* Canary Yellow */
+  --color-canary-yellow-50: #fcfde7;
+  --color-canary-yellow-100: #fafbd0;
+  --color-canary-yellow-200: #f4f7a1;
+  --color-canary-yellow-300: #eff471;
+  --color-canary-yellow-400: #eaf042;
+  --color-canary-yellow-500: #e5ec13;
+  --color-canary-yellow-600: #b7bd0f;
+  --color-canary-yellow-700: #898e0b;
+  --color-canary-yellow-800: #5b5e08;
+  --color-canary-yellow-900: #2e2f04;
+  --color-canary-yellow-950: #202103;
 }
 
 @media (prefers-color-scheme: dark) {
