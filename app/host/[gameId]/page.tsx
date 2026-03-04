@@ -7,6 +7,7 @@ import { useGameChannel } from "@/lib/hooks/useGameChannel";
 import { QuestionListEditor } from "./components/QuestionListEditor";
 import { FileUploadButton } from "./components/FileUploadButton";
 import { GameResetButton } from "./components/GameResetButton";
+import { AddQuestionButton } from "./components/AddQuestionButton";
 
 interface GameState {
   game: {
@@ -300,6 +301,12 @@ export default function HostDashboardPage() {
                   onResetComplete={() => fetchGameState()}
                 />
               </div>
+
+              <AddQuestionButton
+                gameId={gameId}
+                onQuestionAdded={() => fetchGameState()}
+                disabled={isGameActive}
+              />
 
               <QuestionListEditor
                 gameId={gameId}

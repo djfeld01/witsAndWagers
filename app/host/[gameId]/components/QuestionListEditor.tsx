@@ -159,8 +159,11 @@ export function QuestionListEditor({
 
   if (questions.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        No questions yet. Import questions to get started.
+      <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
+        <p className="text-lg mb-2">No questions yet</p>
+        <p className="text-sm">
+          Use the "Add Question" button above or import questions from a file
+        </p>
       </div>
     );
   }
