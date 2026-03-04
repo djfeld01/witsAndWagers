@@ -243,6 +243,18 @@ describe("POST /api/games/[gameId]/advance", () => {
         }),
       });
 
+      // Mock questions query for next question
+      mockSelect.mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            orderBy: vi.fn().mockResolvedValue([
+              { id: "question1", orderIndex: 0 },
+              { id: "question2", orderIndex: 1 },
+            ]),
+          }),
+        }),
+      });
+
       // Mock update
       mockUpdate.mockReturnValueOnce({
         set: vi.fn().mockReturnValue({

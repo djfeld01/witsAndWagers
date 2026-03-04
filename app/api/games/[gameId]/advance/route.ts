@@ -6,7 +6,7 @@ import {
   broadcastPhaseChange,
   broadcastScoreUpdate,
 } from "@/lib/realtime/broadcast";
-import { eq, and } from "drizzle-orm";
+import { eq, and, asc } from "drizzle-orm";
 
 /**
  * Valid phase transitions in the game state machine
@@ -202,10 +202,49 @@ export async function POST(
     }
 
     // Update game phase in database
-    await db
-      .update(games)
-      .set({ currentPhase: targetPhase })
-      .where(eq(games.id, gameId));
+    // If transitioning from reveal to guessing, move to next question
+    if (currentPhase === "reveal" && targetPhase === "guessing") {
+      // Get all questions for this game, ordered by orderIndex
+      const allQuestions = await db
+        .select()
+        .from(questions)
+        .where(eq(questions.gameId, gameId))
+        .orderBy(asc(questions.orderIndex));
+
+      if (allQuestions.length === 0) {
+        return NextResponse.json(
+          {
+            error: {
+              code: "VALIDATION_ERROR",
+              message: "No questions found for this game",
+            },
+          },
+          { status: 400 },
+        );
+      }
+
+      // Find the current question index
+      const currentIndex = allQuestions.findIndex(
+        (q) => q.id === currentQuestionId,
+      );
+
+      // Move to next question (or loop back to first if at end)
+      const nextIndex = (currentIndex + 1) % allQuestions.length;
+      const nextQuestionId = allQuestions[nextIndex].id;
+
+      await db
+        .update(games)
+        .set({
+          currentPhase: targetPhase,
+          currentQuestionId: nextQuestionId,
+        })
+        .where(eq(games.id, gameId));
+    } else {
+      await db
+        .update(games)
+        .set({ currentPhase: targetPhase })
+        .where(eq(games.id, gameId));
+    }
 
     // Broadcast phase change event (non-blocking)
     try {
