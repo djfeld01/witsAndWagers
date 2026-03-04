@@ -52,6 +52,7 @@ export default function DisplayViewPage() {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdvancing, setIsAdvancing] = useState(false);
+  const [showNavigation, setShowNavigation] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
 
   // Fetch game state
@@ -289,21 +290,46 @@ export default function DisplayViewPage() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-red-900 to-blue-950 text-white">
-      {/* Advance Button - Right Side */}
+      {/* Hidden Navigation Toggle - Click bottom-right corner to reveal */}
       <button
-        onClick={advancePhase}
-        disabled={isAdvancing}
-        className="fixed right-8 top-1/2 -translate-y-1/2 bg-tangerine-dream-500 hover:bg-tangerine-dream-600 disabled:bg-gray-600 text-white py-6 px-8 rounded-xl font-bold text-xl shadow-lg z-50 transition-all disabled:cursor-not-allowed"
-        title="Advance to next phase"
+        onClick={() => setShowNavigation(!showNavigation)}
+        className="fixed bottom-4 right-4 w-12 h-12 bg-gray-800 bg-opacity-50 hover:bg-opacity-70 rounded-full flex items-center justify-center z-50 transition-all"
+        title="Toggle navigation"
       >
-        {isAdvancing
-          ? "⏳"
-          : gameState?.game.currentPhase === "guessing"
-            ? "Start\nBetting →"
-            : gameState?.game.currentPhase === "betting"
-              ? "Reveal\nAnswer →"
-              : "Next\nQuestion →"}
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 6h16M4 12h16M4 18h16"
+          />
+        </svg>
       </button>
+
+      {/* Navigation Panel */}
+      {showNavigation && (
+        <div className="fixed bottom-20 right-4 bg-black bg-opacity-80 backdrop-blur-sm rounded-xl p-4 z-50 min-w-[200px]">
+          <div className="text-sm text-gray-400 mb-2">Navigation</div>
+          <button
+            onClick={advancePhase}
+            disabled={isAdvancing}
+            className="w-full bg-tangerine-dream-500 hover:bg-tangerine-dream-600 disabled:bg-gray-600 text-white py-3 px-4 rounded-lg font-bold transition-colors"
+          >
+            {isAdvancing
+              ? "Processing..."
+              : gameState?.game.currentPhase === "guessing"
+                ? "Start Betting →"
+                : gameState?.game.currentPhase === "betting"
+                  ? "Reveal Answer →"
+                  : "Next Question →"}
+          </button>
+        </div>
+      )}
 
       {/* Header */}
       <div className="bg-black bg-opacity-30 backdrop-blur-sm">
@@ -328,26 +354,26 @@ export default function DisplayViewPage() {
 
       {/* Horizontal Leaderboard Bar */}
       {sortedPlayers.length > 0 && (
-        <div className="bg-black bg-opacity-20 backdrop-blur-sm border-b border-white border-opacity-10">
-          <div className="max-w-7xl mx-auto px-8 py-3">
-            <div className="flex items-center gap-6 overflow-x-auto">
-              <div className="text-sm font-bold text-blue-200 whitespace-nowrap">
+        <div className="bg-gray-800 bg-opacity-80 backdrop-blur-sm border-b border-gray-700">
+          <div className="max-w-7xl mx-auto px-8 py-2">
+            <div className="flex items-center gap-4 overflow-x-auto">
+              <div className="text-xs font-bold text-gray-400 whitespace-nowrap">
                 LEADERBOARD:
               </div>
               {sortedPlayers.slice(0, 10).map((player, index) => (
                 <div
                   key={player.id}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap ${
+                  className={`flex items-center gap-2 px-3 py-1 rounded-lg whitespace-nowrap text-sm ${
                     index === 0
-                      ? "bg-yellow-500 bg-opacity-30 border-2 border-yellow-400"
+                      ? "bg-yellow-500 bg-opacity-30 border border-yellow-400"
                       : index === 1
-                        ? "bg-gray-400 bg-opacity-30 border-2 border-gray-400"
+                        ? "bg-gray-400 bg-opacity-30 border border-gray-400"
                         : index === 2
-                          ? "bg-orange-600 bg-opacity-30 border-2 border-orange-500"
-                          : "bg-white bg-opacity-10"
+                          ? "bg-orange-600 bg-opacity-30 border border-orange-500"
+                          : "bg-gray-700 bg-opacity-50"
                   }`}
                 >
-                  <span className="text-lg">
+                  <span className="text-base">
                     {index === 0
                       ? "🥇"
                       : index === 1
@@ -357,11 +383,11 @@ export default function DisplayViewPage() {
                           : `${index + 1}.`}
                   </span>
                   <span className="font-medium">{player.displayName}</span>
-                  <span className="font-bold text-lg">{player.score}</span>
+                  <span className="font-bold">{player.score}</span>
                 </div>
               ))}
               {sortedPlayers.length > 10 && (
-                <div className="text-sm text-blue-300">
+                <div className="text-xs text-gray-400">
                   +{sortedPlayers.length - 10} more
                 </div>
               )}
