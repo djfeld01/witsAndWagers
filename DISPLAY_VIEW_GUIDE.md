@@ -16,9 +16,35 @@ The Display View is a large-screen presentation mode optimized for projectors an
 ### Visual Design
 
 - **Dark gradient background** (blue to purple) for professional look
-- **Large, bold text** optimized for viewing from a distance
+- **Extra large text** optimized for viewing from a distance (7xl font size for numbers)
+- **3-column grid layout** for better readability on widescreen displays
 - **Smooth animations** and transitions between phases
-- **Fixed leaderboard** in the top-right corner
+- **Compact, collapsible leaderboard** in the top-right corner
+- **Hidden navigation controls** for advancing phases
+
+### Navigation Controls (NEW)
+
+**Hidden Menu Button** (bottom-left corner):
+
+- Small circular button with menu icon
+- Click to reveal/hide navigation panel
+- Navigation panel shows:
+  - Current phase indicator
+  - Advance button (Start Betting / Reveal Answer / Next Question)
+- Allows advancing phases directly from display view
+- Works in parallel with Host Dashboard controls
+- Perfect for single-screen setups
+
+### Leaderboard (IMPROVED)
+
+**Compact Design**: Smaller footprint in top-right corner
+
+**Two Display Modes**:
+
+1. **Collapsed**: Shows only the top leader with gold medal 🥇
+2. **Expanded**: Shows top 3 with medals (🥇🥈🥉), option to show all players
+
+**Toggle Button**: Click "Collapse"/"Expand" to switch between modes
 
 ### Phase-by-Phase Display
 
@@ -32,9 +58,10 @@ The Display View is a large-screen presentation mode optimized for projectors an
 #### Betting Phase
 
 - Question displayed at top (smaller, 4xl font)
-- Grid of all guesses with player names
+- **3-column grid** of all guesses with player names
+- **Extra large numbers** (7xl font) for easy reading from distance
 - Zero option highlighted in gray
-- Player guesses in blue cards
+- Player guesses in blue cards with thicker borders
 - Status message: "Players are placing their bets..."
 
 #### Reveal Phase
@@ -42,9 +69,10 @@ The Display View is a large-screen presentation mode optimized for projectors an
 - Question at top
 - **Massive correct answer** (8xl font) in green
 - Follow-up notes displayed in blue box
-- All guesses shown with winner highlighted:
+- **3-column grid** of all guesses with winner highlighted:
   - Winner card: Green background with ⭐ WINNER ⭐
   - Winner card scales up (110%) for emphasis
+  - Extra large numbers (7xl font) for visibility
   - Other guesses: Subtle white background
 
 ### Leaderboard
@@ -66,11 +94,13 @@ The Display View is a large-screen presentation mode optimized for projectors an
 
 ## Tips for Best Experience
 
-1. **Use a second monitor/projector** - Keep the Host Dashboard on your laptop, project the Display View
-2. **Full screen mode** - Press F11 (or Cmd+Ctrl+F on Mac) for immersive full-screen
-3. **Test before the game** - Open the display view and advance through phases to ensure everything looks good
-4. **Stable internet** - Display view uses real-time updates, ensure good connectivity
-5. **Dark room** - The dark background looks best in a dimly lit room
+1. **Single-screen setup** - Use the hidden navigation controls to advance phases directly from the display
+2. **Dual-screen setup** - Keep Host Dashboard on your laptop, project Display View, control from either
+3. **Full screen mode** - Press F11 (or Cmd+Ctrl+F on Mac) for immersive full-screen
+4. **Collapse leaderboard** - Click "Collapse" to show only the leader and maximize content space
+5. **Test before the game** - Open the display view and advance through phases to ensure everything looks good
+6. **Stable internet** - Display view uses real-time updates, ensure good connectivity
+7. **Dark room** - The dark background looks best in a dimly lit room
 
 ## Keyboard Shortcuts
 

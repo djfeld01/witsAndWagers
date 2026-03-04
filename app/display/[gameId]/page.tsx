@@ -48,6 +48,9 @@ export default function DisplayViewPage() {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [loading, setLoading] = useState(true);
   const [showAllPlayers, setShowAllPlayers] = useState(false);
+  const [showNavigation, setShowNavigation] = useState(false);
+  const [isAdvancing, setIsAdvancing] = useState(false);
+  const [leaderboardExpanded, setLeaderboardExpanded] = useState(true);
 
   // Fetch game state
   const fetchGameState = async () => {
@@ -62,6 +65,40 @@ export default function DisplayViewPage() {
       console.error("Failed to load game:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Advance to next phase
+  const advancePhase = async () => {
+    if (!gameState) return;
+
+    const phaseMap: Record<string, string> = {
+      guessing: "betting",
+      betting: "reveal",
+      reveal: "guessing",
+    };
+
+    const targetPhase = phaseMap[gameState.game.currentPhase];
+
+    setIsAdvancing(true);
+    try {
+      const response = await fetch(`/api/games/${gameId}/advance`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ targetPhase }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to advance phase");
+      }
+
+      await fetchGameState();
+    } catch (err) {
+      console.error("Failed to advance phase:", err);
+    } finally {
+      setIsAdvancing(false);
     }
   };
 
@@ -167,6 +204,47 @@ export default function DisplayViewPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 to-purple-900 text-white">
+      {/* Hidden Navigation Toggle - Click bottom-left corner to reveal */}
+      <button
+        onClick={() => setShowNavigation(!showNavigation)}
+        className="fixed bottom-4 left-4 w-12 h-12 bg-gray-800 bg-opacity-50 hover:bg-opacity-70 rounded-full flex items-center justify-center z-50 transition-all"
+        title="Toggle navigation"
+      >
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 6h16M4 12h16M4 18h16"
+          />
+        </svg>
+      </button>
+
+      {/* Navigation Panel */}
+      {showNavigation && (
+        <div className="fixed bottom-20 left-4 bg-black bg-opacity-80 backdrop-blur-sm rounded-xl p-4 z-50 min-w-[200px]">
+          <div className="text-sm text-gray-400 mb-2">Navigation</div>
+          <button
+            onClick={advancePhase}
+            disabled={isAdvancing}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white py-2 px-4 rounded-lg font-medium transition-colors"
+          >
+            {isAdvancing
+              ? "Processing..."
+              : gameState?.game.currentPhase === "guessing"
+                ? "Start Betting"
+                : gameState?.game.currentPhase === "betting"
+                  ? "Reveal Answer"
+                  : "Next Question"}
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-black bg-opacity-30 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-8 py-6 flex justify-between items-center">
@@ -222,11 +300,11 @@ export default function DisplayViewPage() {
                   <div className="text-3xl font-bold text-center mb-8">
                     Place Your Bets!
                   </div>
-                  <div className="grid grid-cols-4 gap-6 max-w-5xl mx-auto">
+                  <div className="grid grid-cols-3 gap-8 max-w-6xl mx-auto">
                     {/* Zero option */}
-                    <div className="bg-gray-700 bg-opacity-50 backdrop-blur-sm p-8 rounded-xl text-center border-2 border-gray-500">
-                      <div className="text-5xl font-bold mb-2">0</div>
-                      <div className="text-sm text-gray-300">
+                    <div className="bg-gray-700 bg-opacity-50 backdrop-blur-sm p-12 rounded-xl text-center border-4 border-gray-500">
+                      <div className="text-7xl font-bold mb-3">0</div>
+                      <div className="text-lg text-gray-300">
                         Always available
                       </div>
                     </div>
@@ -235,15 +313,15 @@ export default function DisplayViewPage() {
                     {currentGuesses.map((guess) => (
                       <div
                         key={guess.id}
-                        className="bg-white bg-opacity-10 backdrop-blur-sm p-8 rounded-xl text-center border-2 border-blue-400"
+                        className="bg-white bg-opacity-10 backdrop-blur-sm p-12 rounded-xl text-center border-4 border-blue-400"
                       >
-                        <div className="text-5xl font-bold mb-2">
+                        <div className="text-7xl font-bold mb-3">
                           {formatNumber(
                             guess.numericGuess,
                             currentQuestion.answerFormat,
                           )}
                         </div>
-                        <div className="text-sm text-blue-200">
+                        <div className="text-xl text-blue-200">
                           {guess.playerName}
                         </div>
                       </div>
@@ -298,28 +376,28 @@ export default function DisplayViewPage() {
                     <div className="text-3xl font-bold text-center mb-8">
                       All Guesses
                     </div>
-                    <div className="grid grid-cols-4 gap-6 max-w-5xl mx-auto">
+                    <div className="grid grid-cols-3 gap-8 max-w-6xl mx-auto">
                       {currentGuesses.map((guess) => (
                         <div
                           key={guess.id}
-                          className={`p-8 rounded-xl text-center border-4 ${
+                          className={`p-12 rounded-xl text-center border-4 ${
                             guess.id === closestGuessId
                               ? "bg-green-500 bg-opacity-30 border-green-400 scale-110"
                               : "bg-white bg-opacity-10 backdrop-blur-sm border-gray-500"
                           }`}
                         >
                           {guess.id === closestGuessId && (
-                            <div className="text-xl text-green-300 mb-2">
+                            <div className="text-2xl text-green-300 mb-3">
                               ⭐ WINNER ⭐
                             </div>
                           )}
-                          <div className="text-5xl font-bold mb-2">
+                          <div className="text-7xl font-bold mb-3">
                             {formatNumber(
                               guess.numericGuess,
                               currentQuestion.answerFormat,
                             )}
                           </div>
-                          <div className="text-sm text-blue-200">
+                          <div className="text-xl text-blue-200">
                             {guess.playerName}
                           </div>
                         </div>
@@ -334,56 +412,88 @@ export default function DisplayViewPage() {
       </div>
 
       {/* Leaderboard Sidebar */}
-      <div className="fixed top-24 right-8 bg-black bg-opacity-50 backdrop-blur-sm rounded-xl p-6 min-w-[300px]">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-2xl font-bold">Leaderboard</h3>
-          {sortedPlayers.length > 3 && (
-            <button
-              onClick={() => setShowAllPlayers(!showAllPlayers)}
-              className="text-sm bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded"
-            >
-              {showAllPlayers ? "Top 3" : "Show All"}
-            </button>
-          )}
+      <div className="fixed top-24 right-8 bg-black bg-opacity-50 backdrop-blur-sm rounded-xl p-4 min-w-[250px]">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-xl font-bold">
+            {leaderboardExpanded ? "Leaderboard" : "Leader"}
+          </h3>
+          <button
+            onClick={() => setLeaderboardExpanded(!leaderboardExpanded)}
+            className="text-xs bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded"
+          >
+            {leaderboardExpanded ? "Collapse" : "Expand"}
+          </button>
         </div>
 
-        <div className="space-y-3">
-          {(showAllPlayers ? sortedPlayers : topPlayers).map(
-            (player, index) => (
-              <div
-                key={player.id}
-                className={`flex justify-between items-center p-3 rounded-lg ${
-                  index === 0
-                    ? "bg-yellow-500 bg-opacity-30 border-2 border-yellow-400"
-                    : index === 1
-                      ? "bg-gray-400 bg-opacity-30 border-2 border-gray-400"
-                      : index === 2
-                        ? "bg-orange-600 bg-opacity-30 border-2 border-orange-500"
-                        : "bg-white bg-opacity-10"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="text-2xl font-bold w-8">
-                    {index === 0
-                      ? "🥇"
-                      : index === 1
-                        ? "🥈"
-                        : index === 2
-                          ? "🥉"
-                          : `${index + 1}.`}
+        <div className="space-y-2">
+          {leaderboardExpanded ? (
+            <>
+              {/* Show top 3 or all players */}
+              {(showAllPlayers ? sortedPlayers : topPlayers).map(
+                (player, index) => (
+                  <div
+                    key={player.id}
+                    className={`flex justify-between items-center p-2 rounded-lg ${
+                      index === 0
+                        ? "bg-yellow-500 bg-opacity-30 border-2 border-yellow-400"
+                        : index === 1
+                          ? "bg-gray-400 bg-opacity-30 border-2 border-gray-400"
+                          : index === 2
+                            ? "bg-orange-600 bg-opacity-30 border-2 border-orange-500"
+                            : "bg-white bg-opacity-10"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="text-xl font-bold w-6">
+                        {index === 0
+                          ? "🥇"
+                          : index === 1
+                            ? "🥈"
+                            : index === 2
+                              ? "🥉"
+                              : `${index + 1}.`}
+                      </div>
+                      <div className="font-medium text-sm">
+                        {player.displayName}
+                      </div>
+                    </div>
+                    <div className="text-xl font-bold">{player.score}</div>
                   </div>
-                  <div className="font-medium text-lg">
-                    {player.displayName}
+                ),
+              )}
+              {sortedPlayers.length > 3 && (
+                <button
+                  onClick={() => setShowAllPlayers(!showAllPlayers)}
+                  className="w-full text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded mt-2"
+                >
+                  {showAllPlayers ? "Top 3" : "Show All"}
+                </button>
+              )}
+            </>
+          ) : (
+            <>
+              {/* Show only top player */}
+              {sortedPlayers.length > 0 && (
+                <div className="flex justify-between items-center p-3 rounded-lg bg-yellow-500 bg-opacity-30 border-2 border-yellow-400">
+                  <div className="flex items-center gap-2">
+                    <div className="text-2xl font-bold">🥇</div>
+                    <div className="font-medium">
+                      {sortedPlayers[0].displayName}
+                    </div>
+                  </div>
+                  <div className="text-2xl font-bold">
+                    {sortedPlayers[0].score}
                   </div>
                 </div>
-                <div className="text-2xl font-bold">{player.score}</div>
-              </div>
-            ),
+              )}
+            </>
           )}
         </div>
 
         {sortedPlayers.length === 0 && (
-          <div className="text-center text-gray-400 py-4">No players yet</div>
+          <div className="text-center text-gray-400 py-2 text-sm">
+            No players yet
+          </div>
         )}
       </div>
     </div>
