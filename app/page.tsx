@@ -2,19 +2,19 @@
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-celadon-50 via-muted-teal-50 to-smart-blue-50 flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-canary-yellow-100 via-celadon-100 to-vintage-grape-100 flex items-center justify-center px-4 py-12">
       <div className="max-w-4xl w-full">
         {/* Header */}
         <div className="text-center mb-16">
           <div className="inline-block mb-6">
-            <h1 className="text-7xl font-bold bg-gradient-to-r from-celadon-600 via-smart-blue-600 to-vintage-grape-600 bg-clip-text text-transparent">
+            <h1 className="text-7xl font-bold bg-gradient-to-r from-celadon-600 via-smart-blue-600 to-vintage-grape-600 bg-clip-text text-transparent drop-shadow-lg">
               #Trivia
             </h1>
           </div>
-          <p className="text-2xl text-smart-blue-800 font-medium mb-3">
+          <p className="text-2xl text-vintage-grape-800 font-medium mb-3">
             Guess. Bet. Win.
           </p>
-          <p className="text-lg text-muted-teal-700 max-w-2xl mx-auto">
+          <p className="text-lg text-smart-blue-700 max-w-2xl mx-auto">
             The trivia game where you don't need to know the answer—just guess
             close and bet smart
           </p>
@@ -25,31 +25,31 @@ export default function Home() {
           {/* Host Card */}
           <a
             href="/host/create"
-            className="group bg-white/80 backdrop-blur-sm p-10 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border-2 border-celadon-200 hover:border-celadon-400 hover:-translate-y-1"
+            className="group bg-gradient-to-br from-celadon-300 to-muted-teal-400 p-10 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 border-2 border-celadon-500 hover:border-celadon-600 hover:-translate-y-1"
           >
             <div className="text-center">
-              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-celadon-400 to-celadon-600 rounded-2xl flex items-center justify-center text-4xl shadow-lg group-hover:scale-110 transition-transform">
+              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-canary-yellow-400 to-canary-yellow-600 rounded-2xl flex items-center justify-center text-4xl shadow-lg group-hover:scale-110 transition-transform">
                 🎮
               </div>
               <h2 className="text-3xl font-bold text-smart-blue-900 mb-3">
                 Host a Game
               </h2>
-              <p className="text-muted-teal-700 text-lg">
+              <p className="text-smart-blue-800 text-lg font-medium">
                 Create questions and run the show
               </p>
             </div>
           </a>
 
           {/* Player Card */}
-          <div className="bg-white/80 backdrop-blur-sm p-10 rounded-2xl shadow-lg border-2 border-smart-blue-200">
+          <div className="bg-gradient-to-br from-vintage-grape-300 to-smart-blue-400 p-10 rounded-2xl shadow-xl border-2 border-vintage-grape-500">
             <div className="text-center">
-              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-smart-blue-400 to-smart-blue-600 rounded-2xl flex items-center justify-center text-4xl shadow-lg">
+              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-canary-yellow-400 to-canary-yellow-500 rounded-2xl flex items-center justify-center text-4xl shadow-lg">
                 📱
               </div>
-              <h2 className="text-3xl font-bold text-smart-blue-900 mb-3">
+              <h2 className="text-3xl font-bold text-white mb-3">
                 Join a Game
               </h2>
-              <p className="text-muted-teal-700 mb-6 text-lg">
+              <p className="text-white mb-6 text-lg font-medium">
                 Enter your game code
               </p>
               <form
@@ -66,12 +66,12 @@ export default function Home() {
                   type="text"
                   name="code"
                   placeholder="ENTER CODE"
-                  className="w-full px-6 py-4 border-2 border-muted-teal-300 rounded-xl focus:ring-2 focus:ring-smart-blue-500 focus:border-smart-blue-500 mb-4 text-center text-xl font-mono uppercase tracking-wider"
+                  className="w-full px-6 py-4 border-2 border-white rounded-xl focus:ring-2 focus:ring-canary-yellow-500 focus:border-canary-yellow-500 mb-4 text-center text-xl font-mono uppercase tracking-wider bg-white/90"
                   maxLength={6}
                 />
                 <button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-smart-blue-600 to-vintage-grape-600 text-white py-4 px-6 rounded-xl hover:from-smart-blue-700 hover:to-vintage-grape-700 font-semibold text-lg shadow-lg hover:shadow-xl transition-all"
+                  className="w-full bg-gradient-to-r from-canary-yellow-500 to-canary-yellow-600 text-smart-blue-900 py-4 px-6 rounded-xl hover:from-canary-yellow-600 hover:to-canary-yellow-700 font-bold text-lg shadow-lg hover:shadow-xl transition-all"
                 >
                   Join Game
                 </button>
@@ -81,31 +81,29 @@ export default function Home() {
         </div>
 
         {/* How to Play */}
-        <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-8 border-2 border-canary-yellow-200">
-          <h3 className="text-2xl font-bold text-smart-blue-900 mb-4 text-center">
+        <div className="bg-gradient-to-br from-muted-teal-300 to-muted-teal-400 rounded-2xl p-8 border-2 border-muted-teal-600 shadow-xl">
+          <h3 className="text-2xl font-bold text-white mb-4 text-center">
             How to Play
           </h3>
           <div className="grid md:grid-cols-3 gap-6 text-center">
             <div>
               <div className="text-4xl mb-3">🤔</div>
-              <h4 className="font-semibold text-smart-blue-800 mb-2">
-                1. Guess
-              </h4>
-              <p className="text-muted-teal-700 text-sm">
+              <h4 className="font-semibold text-white mb-2">1. Guess</h4>
+              <p className="text-celadon-50 text-sm">
                 Submit your best guess to numerical trivia questions
               </p>
             </div>
             <div>
               <div className="text-4xl mb-3">🎯</div>
-              <h4 className="font-semibold text-smart-blue-800 mb-2">2. Bet</h4>
-              <p className="text-muted-teal-700 text-sm">
+              <h4 className="font-semibold text-white mb-2">2. Bet</h4>
+              <p className="text-celadon-50 text-sm">
                 Bet on which guess is closest to the answer
               </p>
             </div>
             <div>
               <div className="text-4xl mb-3">🏆</div>
-              <h4 className="font-semibold text-smart-blue-800 mb-2">3. Win</h4>
-              <p className="text-muted-teal-700 text-sm">
+              <h4 className="font-semibold text-white mb-2">3. Win</h4>
+              <p className="text-celadon-50 text-sm">
                 Earn points for accuracy and smart betting
               </p>
             </div>
