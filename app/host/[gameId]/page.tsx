@@ -350,6 +350,44 @@ export default function HostDashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Start Game Button - Show when game hasn't started */}
+            {!currentQuestion && gameState.questions.length > 0 && (
+              <div className="bg-white p-6 rounded-lg shadow">
+                <div className="text-center py-8">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                    Ready to Start?
+                  </h2>
+                  <p className="text-gray-600 mb-6">
+                    You have {gameState.questions.length} question
+                    {gameState.questions.length !== 1 ? "s" : ""} and{" "}
+                    {gameState.players.length} player
+                    {gameState.players.length !== 1 ? "s" : ""} ready to play.
+                  </p>
+                  <button
+                    onClick={advancePhase}
+                    disabled={isAdvancing}
+                    className="bg-green-600 text-white py-4 px-8 rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-bold text-xl"
+                  >
+                    {isAdvancing ? "Starting..." : "Start Game"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* No Questions Message */}
+            {!currentQuestion && gameState.questions.length === 0 && (
+              <div className="bg-white p-6 rounded-lg shadow">
+                <div className="text-center py-8">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                    No Questions Yet
+                  </h2>
+                  <p className="text-gray-600">
+                    Add questions above to start the game.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Current Question */}
             {currentQuestion && (
               <div className="bg-white p-6 rounded-lg shadow">
