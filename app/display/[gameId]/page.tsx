@@ -84,7 +84,11 @@ export default function DisplayViewPage() {
       reveal: "guessing",
     };
 
-    const targetPhase = phaseMap[gameState.game.currentPhase];
+    // Special case: if no current question, we're starting the game
+    // Stay in guessing phase to trigger first question setup
+    const targetPhase = !gameState.game.currentQuestionId
+      ? "guessing"
+      : phaseMap[gameState.game.currentPhase];
 
     setIsAdvancing(true);
     try {
@@ -97,7 +101,11 @@ export default function DisplayViewPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to advance phase");
+        const errorData = await response.json();
+        console.error("Advance phase error:", errorData);
+        throw new Error(
+          `Failed to advance phase: ${errorData.error?.message || response.statusText}`,
+        );
       }
 
       await fetchGameState();
