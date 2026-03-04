@@ -234,8 +234,25 @@ export async function POST(
         (q) => q.id === currentQuestionId,
       );
 
-      // Move to next question (or loop back to first if at end)
-      const nextIndex = (currentIndex + 1) % allQuestions.length;
+      // Check if we're on the last question
+      const isLastQuestion = currentIndex === allQuestions.length - 1;
+
+      if (isLastQuestion) {
+        // Stay on the last question - don't advance
+        // This allows the final results screen to continue showing
+        return NextResponse.json(
+          {
+            error: {
+              code: "GAME_COMPLETE",
+              message: "Game is complete. Cannot advance past the last question.",
+            },
+          },
+          { status: 400 },
+        );
+      }
+
+      // Move to next question
+      const nextIndex = currentIndex + 1;
       const nextQuestionId = allQuestions[nextIndex].id;
 
       await db
