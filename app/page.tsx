@@ -7,7 +7,10 @@ export default function Home() {
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-block mb-4">
-            <h1 className="text-6xl font-bold bg-linear-to-r from-[#78ac53] via-[#e75618] to-[#b85447] bg-clip-text text-transparent drop-shadow-lg">
+            <h1
+              className="text-6xl font-black text-[#e75618] drop-shadow-lg"
+              style={{ fontFamily: 'Impact, "Arial Black", sans-serif' }}
+            >
               #Trivia
             </h1>
           </div>
@@ -25,7 +28,7 @@ export default function Home() {
           {/* Host Card */}
           <a
             href="/host/create"
-            className="group bg-linear-to-br from-[#aecd98] to-[#78ac53] p-8 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 border-2 border-[#608a42] hover:border-[#486732] hover:-translate-y-1"
+            className="group bg-linear-to-br from-[#f09a75] to-[#ec7846] p-8 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 border-2 border-[#e75618] hover:border-[#b94513] hover:-translate-y-1"
           >
             <div className="text-center">
               <div className="w-16 h-16 mx-auto mb-4 bg-linear-to-br from-[#ddd755] to-[#adc33c] rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
@@ -43,10 +46,10 @@ export default function Home() {
                   />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-[#1a0c0a] mb-2">
+              <h2 className="text-2xl font-bold text-white mb-2">
                 Host a Game
               </h2>
-              <p className="text-[#49221d] text-base">
+              <p className="text-white text-base">
                 Create questions and run the show
               </p>
             </div>
