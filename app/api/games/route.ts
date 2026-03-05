@@ -82,11 +82,8 @@ export async function POST(request: NextRequest) {
 
         await tx.insert(questions).values(questionValues);
 
-        // Set the first question as current question
-        await tx
-          .update(games)
-          .set({ currentQuestionId: questionValues[0].id })
-          .where(eq(games.id, gameId));
+        // Don't set currentQuestionId - let the host start the game manually
+        // This ensures the display page shows the pre-game landing page
       }
     });
 
