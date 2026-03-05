@@ -28,12 +28,12 @@ This implementation adds a question set library to the trivia game, enabling use
     - **Validates: Requirements 1.2, 7.1**
     - Generate random question set questions and verify all have required fields matching user-created question structure
 
-- [-] 2. Create database migration and seed data
+- [x] 2. Create database migration and seed data
   - [x] 2.1 Generate Drizzle migration for new tables
     - Run drizzle-kit generate to create migration file
     - Review migration SQL for correctness
     - _Requirements: 1.1, 1.3_
-  - [-] 2.2 Create seed data script for categories and question sets
+  - [x] 2.2 Create seed data script for categories and question sets
     - Create lib/db/seed-question-sets.ts script
     - Add 6 initial categories: General Knowledge, Science, History, Pop Culture, Sports, Geography
     - Add at least 3 question sets per category (18+ total sets)
@@ -41,14 +41,14 @@ This implementation adds a question set library to the trivia game, enabling use
     - Include mix of answer formats (plain, currency, date, percentage)
     - Include questions with and without subText and followUpNotes
     - _Requirements: 1.3, 1.4_
-  - [ ] 2.3 Run migration and seed script
+  - [x] 2.3 Run migration and seed script
     - Apply migration to database
     - Execute seed script to populate initial data
     - Verify data integrity with sample queries
     - _Requirements: 1.1, 1.3_
 
-- [ ] 3. Implement question set API endpoints
-  - [ ] 3.1 Create GET /api/question-sets/categories endpoint
+- [x] 3. Implement question set API endpoints
+  - [x] 3.1 Create GET /api/question-sets/categories endpoint
     - Create app/api/question-sets/categories/route.ts
     - Query categories table with question set counts (join with questionSets)
     - Return categories sorted by displayOrder
@@ -58,7 +58,7 @@ This implementation adds a question set library to the trivia game, enabling use
     - **Property 4: Category Display Completeness**
     - **Validates: Requirements 3.1**
     - Generate random categories and verify API returns all of them
-  - [ ] 3.3 Create GET /api/question-sets endpoint with categoryId filter
+  - [x] 3.3 Create GET /api/question-sets endpoint with categoryId filter
     - Create app/api/question-sets/route.ts
     - Accept categoryId query parameter
     - Query questionSets table filtered by categoryId
@@ -70,7 +70,7 @@ This implementation adds a question set library to the trivia game, enabling use
     - **Property 5: Category Filtering Accuracy**
     - **Validates: Requirements 3.2**
     - Generate random question sets across categories and verify filtering returns correct sets
-  - [ ] 3.5 Create GET /api/question-sets/[setId]/questions endpoint
+  - [x] 3.5 Create GET /api/question-sets/[setId]/questions endpoint
     - Create app/api/question-sets/[setId]/questions/route.ts
     - Query questionSetQuestions table filtered by questionSetId
     - Return questions sorted by orderIndex
