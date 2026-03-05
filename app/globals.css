@@ -104,3 +104,32 @@ textarea::placeholder {
   color: #6b7280 !important;
   opacity: 1;
 }
+
+/* Phase Transition Animations */
+.phase-content {
+  transition:
+    opacity 300ms ease-in-out,
+    transform 300ms ease-in-out;
+}
+
+.phase-content-exit {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.phase-content-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.phase-content-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .phase-content {
+    transition: none;
+  }
+}
