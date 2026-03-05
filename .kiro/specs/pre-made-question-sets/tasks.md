@@ -87,17 +87,17 @@ This implementation adds a question set library to the trivia game, enabling use
     - Test database connection failures return 500 errors
     - _Requirements: 3.1, 3.2, 1.4_
 
-- [ ] 4. Checkpoint - Verify API endpoints work correctly
+- [x] 4. Checkpoint - Verify API endpoints work correctly
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 5. Create UI components for question set browsing
-  - [ ] 5.1 Create QuestionSourceSelector component
+- [x] 5. Create UI components for question set browsing
+  - [x] 5.1 Create QuestionSourceSelector component
     - Create components/game-creation/QuestionSourceSelector.tsx
     - Implement radio button group or tab-style selector for "manual" vs "premade" modes
     - Accept selectedMode and onModeChange props
     - Style with Tailwind CSS matching existing game creation page
     - _Requirements: 2.1, 2.2_
-  - [ ] 5.2 Create CategoryBrowser component
+  - [x] 5.2 Create CategoryBrowser component
     - Create components/game-creation/CategoryBrowser.tsx
     - Fetch categories from /api/question-sets/categories on mount
     - Display category cards in responsive grid layout
@@ -111,7 +111,7 @@ This implementation adds a question set library to the trivia game, enabling use
     - Test category selection updates state
     - Test empty categories list displays appropriate message
     - _Requirements: 3.1_
-  - [ ] 5.4 Create QuestionSetList component
+  - [x] 5.4 Create QuestionSetList component
     - Create components/game-creation/QuestionSetList.tsx
     - Accept categoryId prop and fetch question sets from /api/question-sets?categoryId={categoryId}
     - Display question sets as selectable cards with checkboxes
@@ -131,8 +131,8 @@ This implementation adds a question set library to the trivia game, enabling use
     - Test loading and error states
     - _Requirements: 3.2, 3.3, 3.4_
 
-- [ ] 6. Create question preview and selection components
-  - [ ] 6.1 Create QuestionPreviewModal component
+- [x] 6. Create question preview and selection components
+  - [x] 6.1 Create QuestionPreviewModal component
     - Create components/game-creation/QuestionPreviewModal.tsx
     - Accept setId prop and fetch questions from /api/question-sets/{setId}/questions
     - Display modal with question set name and total count
@@ -155,7 +155,7 @@ This implementation adds a question set library to the trivia game, enabling use
     - Test question set with 50+ questions
     - Test expansion toggle functionality
     - _Requirements: 4.1, 4.2, 4.3_
-  - [ ] 6.5 Create SelectedSetsPanel component
+  - [x] 6.5 Create SelectedSetsPanel component
     - Create components/game-creation/SelectedSetsPanel.tsx
     - Display sticky panel showing selected question sets
     - Show set name, category name, and question count for each selected set
@@ -221,8 +221,8 @@ This implementation adds a question set library to the trivia game, enabling use
     - Test validation prevents game creation with zero questions
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-- [ ] 9. Integrate components into game creation page
-  - [ ] 9.1 Update app/host/create/page.tsx with question source selection
+- [-] 9. Integrate components into game creation page
+  - [x] 9.1 Update app/host/create/page.tsx with question source selection
     - Add state management for mode selection (manual vs premade)
     - Integrate QuestionSourceSelector component
     - Show existing manual entry UI when mode is "manual"
@@ -233,7 +233,7 @@ This implementation adds a question set library to the trivia game, enabling use
     - **Property 3: Mode Switching Preserves State**
     - **Validates: Requirements 2.3**
     - Generate manual questions, switch modes, and verify questions are preserved
-  - [ ] 9.3 Add category browsing and question set selection flow
+  - [x] 9.3 Add category browsing and question set selection flow
     - Integrate CategoryBrowser component
     - Integrate QuestionSetList component
     - Integrate QuestionPreviewModal component
@@ -246,7 +246,7 @@ This implementation adds a question set library to the trivia game, enabling use
     - Replace existing question list with loaded questions
     - Allow switching back to set selection if needed
     - _Requirements: 5.1, 6.2_
-  - [ ] 9.5 Update game creation API call to handle pre-made questions
+  - [x] 9.5 Update game creation API call to handle pre-made questions
     - Ensure questions from pre-made sets are stored in questions table with correct gameId
     - Verify correctAnswer is stored as decimal with proper precision
     - Verify answerFormat enum values are preserved
