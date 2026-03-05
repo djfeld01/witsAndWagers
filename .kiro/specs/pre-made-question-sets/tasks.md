@@ -173,8 +173,8 @@ This implementation adds a question set library to the trivia game, enabling use
 - [ ] 7. Checkpoint - Verify browsing and selection UI works correctly
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 8. Implement question customization editor
-  - [ ] 8.1 Create QuestionCustomizationEditor component
+- [x] 8. Implement question customization editor
+  - [x] 8.1 Create QuestionCustomizationEditor component
     - Create components/game-creation/QuestionCustomizationEditor.tsx
     - Accept initial questions array loaded from selected question sets
     - Display editable list of questions with all fields (text, subText, correctAnswer, answerFormat, followUpNotes)
@@ -240,7 +240,7 @@ This implementation adds a question set library to the trivia game, enabling use
     - Integrate SelectedSetsPanel component
     - Manage state for selected category, selected sets, and preview modal
     - _Requirements: 3.1, 3.2, 3.4, 4.1, 4.2, 4.3_
-  - [ ] 9.4 Add question customization flow
+  - [x] 9.4 Add question customization flow
     - Load questions from selected sets when user clicks "Customize & Create Game"
     - Integrate QuestionCustomizationEditor component
     - Replace existing question list with loaded questions
