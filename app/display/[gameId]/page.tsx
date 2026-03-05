@@ -81,8 +81,8 @@ export default function DisplayViewPage() {
 
     setIsTransitioning(true);
 
-    // Exit animation (200ms)
-    await new Promise((resolve) => setTimeout(resolve, 200));
+    // Exit animation (400ms)
+    await new Promise((resolve) => setTimeout(resolve, 400));
 
     // Call the actual advance phase logic
     await advancePhaseInternal();
@@ -90,8 +90,8 @@ export default function DisplayViewPage() {
     // Force re-render with new content
     setContentKey((prev) => prev + 1);
 
-    // Enter animation (300ms)
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    // Enter animation (600ms)
+    await new Promise((resolve) => setTimeout(resolve, 600));
 
     setIsTransitioning(false);
   };
