@@ -34,6 +34,7 @@ export default function CreateGamePage() {
   );
   const [selectedSetIds, setSelectedSetIds] = useState<string[]>([]);
   const [selectedSets, setSelectedSets] = useState<SelectedSet[]>([]);
+  const [availableSets, setAvailableSets] = useState<SelectedSet[]>([]);
   const [previewSetId, setPreviewSetId] = useState<string | null>(null);
   const [previewSetName, setPreviewSetName] = useState<string>("");
 
@@ -135,7 +136,7 @@ export default function CreateGamePage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleManualSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!title.trim()) {
@@ -184,7 +185,7 @@ export default function CreateGamePage() {
               : "Select pre-made question sets to quickly create your game."}
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleManualSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Game Title
@@ -219,10 +220,8 @@ export default function CreateGamePage() {
                       selectedSetIds={selectedSetIds}
                       onSetSelect={handleSetSelect}
                       onSetDeselect={handleSetDeselect}
-                      onPreview={(setId) => {
-                        const set = selectedSets.find((s) => s.id === setId);
-                        handlePreview(setId, set?.name || "Question Set");
-                      }}
+                      onPreview={handlePreview}
+                      onSetsLoaded={setAvailableSets}
                     />
                   )}
                 </div>

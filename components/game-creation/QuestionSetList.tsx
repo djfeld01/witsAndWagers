@@ -15,7 +15,8 @@ interface QuestionSetListProps {
   selectedSetIds: string[];
   onSetSelect: (setId: string) => void;
   onSetDeselect: (setId: string) => void;
-  onPreview: (setId: string) => void;
+  onPreview: (setId: string, setName: string) => void;
+  onSetsLoaded?: (sets: QuestionSet[]) => void;
 }
 
 export default function QuestionSetList({
@@ -24,6 +25,7 @@ export default function QuestionSetList({
   onSetSelect,
   onSetDeselect,
   onPreview,
+  onSetsLoaded,
 }: QuestionSetListProps) {
   const [questionSets, setQuestionSets] = useState<QuestionSet[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,6 +48,9 @@ export default function QuestionSetList({
       }
       const data = await response.json();
       setQuestionSets(data.questionSets);
+      if (onSetsLoaded) {
+        onSetsLoaded(data.questionSets);
+      }
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to load question sets",
@@ -142,7 +147,7 @@ export default function QuestionSetList({
                 </div>
                 <div className="flex-shrink-0">
                   <button
-                    onClick={() => onPreview(set.id)}
+                    onClick={() => onPreview(set.id, set.name)}
                     className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
                   >
                     Preview
