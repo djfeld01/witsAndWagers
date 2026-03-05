@@ -81,3 +81,40 @@ export const bets = pgTable("bets", {
   betOnZero: integer("bet_on_zero").notNull().default(0), // 1 if betting on zero, 0 otherwise
   placedAt: timestamp("placed_at").notNull().defaultNow(),
 });
+
+// Categories table for question sets
+export const categories = pgTable("categories", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  displayOrder: integer("display_order").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Question Sets table
+export const questionSets = pgTable("question_sets", {
+  id: text("id").primaryKey(),
+  categoryId: text("category_id")
+    .notNull()
+    .references(() => categories.id),
+  name: text("name").notNull(),
+  description: text("description"),
+  questionCount: integer("question_count").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Question Set Questions table
+export const questionSetQuestions = pgTable("question_set_questions", {
+  id: text("id").primaryKey(),
+  questionSetId: text("question_set_id")
+    .notNull()
+    .references(() => questionSets.id),
+  orderIndex: integer("order_index").notNull(),
+  text: text("text").notNull(),
+  subText: text("sub_text"),
+  correctAnswer: decimal("correct_answer", {
+    precision: 20,
+    scale: 2,
+  }).notNull(),
+  answerFormat: answerFormatEnum("answer_format").notNull().default("plain"),
+  followUpNotes: text("follow_up_notes"),
+});

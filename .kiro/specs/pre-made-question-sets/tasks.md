@@ -1,0 +1,322 @@
+# Implementation Plan: Pre-Made Question Sets
+
+## Overview
+
+This implementation adds a question set library to the trivia game, enabling users to quickly create games using curated, pre-made question collections. The implementation follows a bottom-up approach: database schema → seed data → API endpoints → UI components → integration. All pre-made questions use the same data structure as user-created questions, ensuring seamless integration with the existing game engine.
+
+## Tasks
+
+- [x] 1. Extend database schema with question set tables
+  - [x] 1.1 Add categories table to lib/db/schema.ts
+    - Create pgTable definition with id, name, displayOrder, createdAt fields
+    - Export table and type definitions
+    - _Requirements: 1.1, 1.3_
+  - [x] 1.2 Add questionSets table to lib/db/schema.ts
+    - Create pgTable definition with id, categoryId, name, description, questionCount, createdAt fields
+    - Add foreign key reference to categories table
+    - Export table and type definitions
+    - _Requirements: 1.1_
+  - [x] 1.3 Add questionSetQuestions table to lib/db/schema.ts
+    - Create pgTable definition with id, questionSetId, orderIndex, text, subText, correctAnswer, answerFormat, followUpNotes fields
+    - Reuse existing answerFormatEnum from questions table
+    - Add foreign key reference to questionSets table
+    - Ensure field structure matches questions table exactly
+    - Export table and type definitions
+    - _Requirements: 1.2, 7.1_
+  - [ ]\* 1.4 Write property test for question set data format consistency
+    - **Property 1: Question Set Data Format Consistency**
+    - **Validates: Requirements 1.2, 7.1**
+    - Generate random question set questions and verify all have required fields matching user-created question structure
+
+- [-] 2. Create database migration and seed data
+  - [x] 2.1 Generate Drizzle migration for new tables
+    - Run drizzle-kit generate to create migration file
+    - Review migration SQL for correctness
+    - _Requirements: 1.1, 1.3_
+  - [-] 2.2 Create seed data script for categories and question sets
+    - Create lib/db/seed-question-sets.ts script
+    - Add 6 initial categories: General Knowledge, Science, History, Pop Culture, Sports, Geography
+    - Add at least 3 question sets per category (18+ total sets)
+    - Add at least 5 questions per question set (90+ total questions)
+    - Include mix of answer formats (plain, currency, date, percentage)
+    - Include questions with and without subText and followUpNotes
+    - _Requirements: 1.3, 1.4_
+  - [ ] 2.3 Run migration and seed script
+    - Apply migration to database
+    - Execute seed script to populate initial data
+    - Verify data integrity with sample queries
+    - _Requirements: 1.1, 1.3_
+
+- [ ] 3. Implement question set API endpoints
+  - [ ] 3.1 Create GET /api/question-sets/categories endpoint
+    - Create app/api/question-sets/categories/route.ts
+    - Query categories table with question set counts (join with questionSets)
+    - Return categories sorted by displayOrder
+    - Include error handling for database failures
+    - _Requirements: 3.1_
+  - [ ]\* 3.2 Write property test for category display completeness
+    - **Property 4: Category Display Completeness**
+    - **Validates: Requirements 3.1**
+    - Generate random categories and verify API returns all of them
+  - [ ] 3.3 Create GET /api/question-sets endpoint with categoryId filter
+    - Create app/api/question-sets/route.ts
+    - Accept categoryId query parameter
+    - Query questionSets table filtered by categoryId
+    - Include category name in response (join with categories)
+    - Return 400 error if categoryId missing
+    - Include error handling for database failures
+    - _Requirements: 3.2_
+  - [ ]\* 3.4 Write property test for category filtering accuracy
+    - **Property 5: Category Filtering Accuracy**
+    - **Validates: Requirements 3.2**
+    - Generate random question sets across categories and verify filtering returns correct sets
+  - [ ] 3.5 Create GET /api/question-sets/[setId]/questions endpoint
+    - Create app/api/question-sets/[setId]/questions/route.ts
+    - Query questionSetQuestions table filtered by questionSetId
+    - Return questions sorted by orderIndex
+    - Return 404 error if question set not found
+    - Include error handling for database failures
+    - _Requirements: 1.4, 4.2, 4.3_
+  - [ ]\* 3.6 Write property test for question set retrieval completeness
+    - **Property 2: Question Set Retrieval Completeness**
+    - **Validates: Requirements 1.4**
+    - Generate random question sets with questions and verify API returns all questions with complete metadata
+  - [ ]\* 3.7 Write unit tests for API error handling
+    - Test 400 error for missing categoryId in question-sets endpoint
+    - Test 404 error for non-existent question set in questions endpoint
+    - Test database connection failures return 500 errors
+    - _Requirements: 3.1, 3.2, 1.4_
+
+- [ ] 4. Checkpoint - Verify API endpoints work correctly
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ] 5. Create UI components for question set browsing
+  - [ ] 5.1 Create QuestionSourceSelector component
+    - Create components/game-creation/QuestionSourceSelector.tsx
+    - Implement radio button group or tab-style selector for "manual" vs "premade" modes
+    - Accept selectedMode and onModeChange props
+    - Style with Tailwind CSS matching existing game creation page
+    - _Requirements: 2.1, 2.2_
+  - [ ] 5.2 Create CategoryBrowser component
+    - Create components/game-creation/CategoryBrowser.tsx
+    - Fetch categories from /api/question-sets/categories on mount
+    - Display category cards in responsive grid layout
+    - Show category name and question set count on each card
+    - Highlight selected category
+    - Handle loading and error states
+    - _Requirements: 3.1_
+  - [ ]\* 5.3 Write unit tests for CategoryBrowser
+    - Test loading state displays correctly
+    - Test error state displays with retry button
+    - Test category selection updates state
+    - Test empty categories list displays appropriate message
+    - _Requirements: 3.1_
+  - [ ] 5.4 Create QuestionSetList component
+    - Create components/game-creation/QuestionSetList.tsx
+    - Accept categoryId prop and fetch question sets from /api/question-sets?categoryId={categoryId}
+    - Display question sets as selectable cards with checkboxes
+    - Show set name, description, and question count
+    - Include "Preview" button for each set
+    - Handle multi-selection state (selectedSetIds array)
+    - Handle loading and error states
+    - _Requirements: 3.2, 3.3, 3.4_
+  - [ ]\* 5.5 Write property test for multi-selection state management
+    - **Property 7: Multi-Selection State Management**
+    - **Validates: Requirements 3.4, 6.1**
+    - Generate random sequences of selections/deselections and verify state accuracy
+  - [ ]\* 5.6 Write unit tests for QuestionSetList
+    - Test checkbox selection updates selectedSetIds
+    - Test preview button triggers onPreview callback
+    - Test empty question sets list displays appropriate message
+    - Test loading and error states
+    - _Requirements: 3.2, 3.3, 3.4_
+
+- [ ] 6. Create question preview and selection components
+  - [ ] 6.1 Create QuestionPreviewModal component
+    - Create components/game-creation/QuestionPreviewModal.tsx
+    - Accept setId prop and fetch questions from /api/question-sets/{setId}/questions
+    - Display modal with question set name and total count
+    - Show first 3 questions with full details (text, subText, correctAnswer, answerFormat)
+    - Implement "Show All Questions" expandable section
+    - Include "Select This Set" and "Close" buttons
+    - Handle loading and error states
+    - _Requirements: 4.1, 4.2, 4.3, 4.4_
+  - [ ]\* 6.2 Write property test for preview content completeness
+    - **Property 8: Preview Content Completeness**
+    - **Validates: Requirements 4.2, 4.4**
+    - Generate question sets with varying question counts and verify preview shows at least 3 questions
+  - [ ]\* 6.3 Write property test for preview expansion
+    - **Property 9: Preview Expansion Shows All Questions**
+    - **Validates: Requirements 4.3**
+    - Generate question sets and verify expansion displays all questions
+  - [ ]\* 6.4 Write unit tests for QuestionPreviewModal edge cases
+    - Test question set with exactly 1 question
+    - Test question set with exactly 2 questions
+    - Test question set with 50+ questions
+    - Test expansion toggle functionality
+    - _Requirements: 4.1, 4.2, 4.3_
+  - [ ] 6.5 Create SelectedSetsPanel component
+    - Create components/game-creation/SelectedSetsPanel.tsx
+    - Display sticky panel showing selected question sets
+    - Show set name, category name, and question count for each selected set
+    - Calculate and display total question count across all sets
+    - Include remove button for each set
+    - Include "Customize & Create Game" button (disabled if no sets selected)
+    - _Requirements: 3.4, 6.1_
+  - [ ]\* 6.6 Write unit tests for SelectedSetsPanel
+    - Test total question count calculation
+    - Test remove button removes set from selection
+    - Test "Customize & Create Game" button disabled when no sets selected
+    - Test "Customize & Create Game" button enabled when sets selected
+    - _Requirements: 3.4, 6.1_
+
+- [ ] 7. Checkpoint - Verify browsing and selection UI works correctly
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ] 8. Implement question customization editor
+  - [ ] 8.1 Create QuestionCustomizationEditor component
+    - Create components/game-creation/QuestionCustomizationEditor.tsx
+    - Accept initial questions array loaded from selected question sets
+    - Display editable list of questions with all fields (text, subText, correctAnswer, answerFormat, followUpNotes)
+    - Show source category name for each question
+    - Implement inline editing for all question fields
+    - Add remove button for each question
+    - Implement drag-and-drop reordering or move up/down buttons
+    - Include "Add Manual Question" button to insert new questions
+    - Validate that at least one question exists before allowing game creation
+    - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 6.3, 6.4_
+  - [ ]\* 8.2 Write property test for question set loading completeness
+    - **Property 10: Question Set Loading Completeness**
+    - **Validates: Requirements 5.1**
+    - Generate question sets and verify all questions load into editor
+  - [ ]\* 8.3 Write property test for question field editing
+    - **Property 11: Question Field Editing**
+    - **Validates: Requirements 5.2**
+    - Generate random field updates and verify question data updates correctly
+  - [ ]\* 8.4 Write property test for question removal
+    - **Property 12: Question Removal Decreases List Size**
+    - **Validates: Requirements 5.3, 6.4**
+    - Generate question lists and verify removal decreases count by 1
+  - [ ]\* 8.5 Write property test for question reordering
+    - **Property 13: Question Reordering Updates Indices**
+    - **Validates: Requirements 5.4**
+    - Generate question lists and verify reordering swaps positions correctly
+  - [ ]\* 8.6 Write property test for manual question addition
+    - **Property 14: Manual Question Addition Increases List Size**
+    - **Validates: Requirements 5.5**
+    - Generate question lists and verify addition increases count by 1
+  - [ ]\* 8.7 Write property test for multiple set combination completeness
+    - **Property 15: Multiple Set Combination Completeness**
+    - **Validates: Requirements 6.2**
+    - Generate multiple question sets and verify combined list contains all questions
+  - [ ]\* 8.8 Write property test for source category metadata preservation
+    - **Property 16: Source Category Metadata Preservation**
+    - **Validates: Requirements 6.3**
+    - Generate questions from different categories and verify source category is preserved
+  - [ ]\* 8.9 Write unit tests for QuestionCustomizationEditor
+    - Test inline editing updates question fields
+    - Test remove button removes question from list
+    - Test drag-and-drop reordering updates orderIndex
+    - Test "Add Manual Question" button adds new question
+    - Test validation prevents game creation with zero questions
+    - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
+
+- [ ] 9. Integrate components into game creation page
+  - [ ] 9.1 Update app/host/create/page.tsx with question source selection
+    - Add state management for mode selection (manual vs premade)
+    - Integrate QuestionSourceSelector component
+    - Show existing manual entry UI when mode is "manual"
+    - Show category browser when mode is "premade"
+    - Preserve manual questions when switching modes
+    - _Requirements: 2.1, 2.2, 2.3_
+  - [ ]\* 9.2 Write property test for mode switching state preservation
+    - **Property 3: Mode Switching Preserves State**
+    - **Validates: Requirements 2.3**
+    - Generate manual questions, switch modes, and verify questions are preserved
+  - [ ] 9.3 Add category browsing and question set selection flow
+    - Integrate CategoryBrowser component
+    - Integrate QuestionSetList component
+    - Integrate QuestionPreviewModal component
+    - Integrate SelectedSetsPanel component
+    - Manage state for selected category, selected sets, and preview modal
+    - _Requirements: 3.1, 3.2, 3.4, 4.1, 4.2, 4.3_
+  - [ ] 9.4 Add question customization flow
+    - Load questions from selected sets when user clicks "Customize & Create Game"
+    - Integrate QuestionCustomizationEditor component
+    - Replace existing question list with loaded questions
+    - Allow switching back to set selection if needed
+    - _Requirements: 5.1, 6.2_
+  - [ ] 9.5 Update game creation API call to handle pre-made questions
+    - Ensure questions from pre-made sets are stored in questions table with correct gameId
+    - Verify correctAnswer is stored as decimal with proper precision
+    - Verify answerFormat enum values are preserved
+    - Verify orderIndex is set correctly for all questions
+    - _Requirements: 7.2, 8.1, 8.3_
+  - [ ]\* 9.6 Write property test for pre-made and manual question processing equivalence
+    - **Property 17: Pre-Made and Manual Question Processing Equivalence**
+    - **Validates: Requirements 7.2, 7.3**
+    - Generate questions from both sources and verify game engine processes them identically
+  - [ ]\* 9.7 Write property test for game creation with valid questions
+    - **Property 18: Game Creation with Valid Questions**
+    - **Validates: Requirements 8.1, 8.3**
+    - Generate non-empty question lists and verify game creation succeeds with all questions
+  - [ ]\* 9.8 Write property test for game creation navigation
+    - **Property 19: Game Creation Navigation**
+    - **Validates: Requirements 8.4**
+    - Verify successful game creation navigates to host page
+  - [ ]\* 9.9 Write integration tests for complete user flows
+    - Test flow: select pre-made mode → browse categories → select sets → preview → customize → create game
+    - Test flow: select pre-made mode → select multiple sets → combine questions → create game
+    - Test flow: select pre-made mode → select set → add manual questions → create game
+    - Test flow: start with manual mode → switch to pre-made → switch back to manual (verify preservation)
+    - _Requirements: 2.1, 2.2, 2.3, 3.1, 3.2, 3.4, 4.1, 5.1, 6.1, 6.2, 8.1, 8.4_
+
+- [ ] 10. Implement error handling and validation
+  - [ ] 10.1 Add empty question list validation
+    - Display error message "At least one question is required to create a game" when attempting to create with zero questions
+    - Keep user on creation page with state preserved
+    - _Requirements: 8.2_
+  - [ ] 10.2 Add network error handling for API requests
+    - Display error banner with retry button for category/set loading failures
+    - Allow user to retry request or switch to manual mode
+    - Display error message and remove set from selection if question set not found
+    - _Requirements: 3.1, 3.2, 1.4_
+  - [ ] 10.3 Add question validation in customization editor
+    - Highlight questions missing required fields (text or correctAnswer)
+    - Display specific error messages for invalid questions
+    - Prevent game creation until all questions are valid
+    - _Requirements: 5.2, 8.2_
+  - [ ]\* 10.4 Write unit tests for error handling
+    - Test empty question list validation displays error
+    - Test network error displays retry button
+    - Test question set not found removes set from selection
+    - Test invalid question data prevents game creation
+    - _Requirements: 8.2, 3.1, 3.2, 1.4_
+
+- [ ] 11. Add question count display accuracy
+  - [ ] 11.1 Ensure question counts are accurate throughout UI
+    - Verify CategoryBrowser displays correct question set counts per category
+    - Verify QuestionSetList displays correct question count per set
+    - Verify QuestionPreviewModal displays correct total question count
+    - Verify SelectedSetsPanel displays correct total across selected sets
+    - _Requirements: 3.3, 4.1_
+  - [ ]\* 11.2 Write property test for question count display accuracy
+    - **Property 6: Question Count Display Accuracy**
+    - **Validates: Requirements 3.3, 4.1**
+    - Generate question sets with varying counts and verify displayed counts match actual counts
+
+- [ ] 12. Final checkpoint - End-to-end testing and verification
+  - Ensure all tests pass, ask the user if questions arise.
+  - Verify complete user flows work from browsing to game creation
+  - Verify pre-made questions display and function correctly during gameplay
+  - Verify data integrity in database after game creation
+
+## Notes
+
+- Tasks marked with `*` are optional and can be skipped for faster MVP
+- Each task references specific requirements for traceability
+- Property tests use fast-check library with minimum 100 iterations
+- All code examples use TypeScript/JavaScript with React and Next.js
+- Database operations use Drizzle ORM
+- UI components use Tailwind CSS for styling
+- Checkpoints ensure incremental validation and provide opportunities for user feedback
