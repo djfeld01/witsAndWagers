@@ -196,7 +196,10 @@ export default function CreateGamePage() {
 
       const data = await response.json();
       console.log("Game created successfully:", data);
-      router.push(`/host/${data.gameId}`);
+      console.log("Attempting to navigate to:", `/host/${data.gameId}`);
+
+      // Use window.location as a fallback if router.push doesn't work
+      window.location.href = `/host/${data.gameId}`;
     } catch (err) {
       console.error("Error creating game:", err);
       setError(err instanceof Error ? err.message : "Failed to create game");
