@@ -47,6 +47,7 @@ export default function SelectedSetsPanel({
               </p>
             </div>
             <button
+              type="button"
               onClick={() => onRemoveSet(set.id)}
               className="flex-shrink-0 text-red-600 hover:text-red-700 text-xl leading-none"
               aria-label="Remove set"
@@ -68,6 +69,7 @@ export default function SelectedSetsPanel({
         </div>
 
         <button
+          type="button"
           onClick={onProceedToCustomization}
           disabled={selectedSets.length === 0}
           className="w-full py-3 px-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"

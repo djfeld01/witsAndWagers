@@ -84,6 +84,7 @@ export default function QuestionPreviewModal({
               )}
             </div>
             <button
+              type="button"
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
             >
@@ -108,6 +109,7 @@ export default function QuestionPreviewModal({
             <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
               <p className="text-red-700 mb-4">{error}</p>
               <button
+                type="button"
                 onClick={fetchQuestions}
                 className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
               >
@@ -164,6 +166,7 @@ export default function QuestionPreviewModal({
 
               {questions.length > 3 && !showAll && (
                 <button
+                  type="button"
                   onClick={() => setShowAll(true)}
                   className="w-full py-3 px-4 border-2 border-gray-300 rounded-lg text-gray-700 font-medium hover:border-gray-400 hover:bg-gray-50 transition-colors"
                 >
@@ -173,6 +176,7 @@ export default function QuestionPreviewModal({
 
               {showAll && questions.length > 3 && (
                 <button
+                  type="button"
                   onClick={() => setShowAll(false)}
                   className="w-full py-3 px-4 border-2 border-gray-300 rounded-lg text-gray-700 font-medium hover:border-gray-400 hover:bg-gray-50 transition-colors"
                 >
@@ -185,12 +189,14 @@ export default function QuestionPreviewModal({
 
         <div className="p-6 border-t border-gray-200 flex gap-3">
           <button
+            type="button"
             onClick={onClose}
             className="flex-1 py-3 px-4 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
           >
             Close
           </button>
           <button
+            type="button"
             onClick={() => {
               onSelect();
               onClose();

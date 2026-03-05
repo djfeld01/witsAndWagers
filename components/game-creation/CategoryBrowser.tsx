@@ -62,6 +62,7 @@ export default function CategoryBrowser({
       <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
         <p className="text-red-700 mb-4">{error}</p>
         <button
+          type="button"
           onClick={fetchCategories}
           className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
         >
@@ -88,6 +89,7 @@ export default function CategoryBrowser({
         {categories.map((category) => (
           <button
             key={category.id}
+            type="button"
             onClick={() => onCategorySelect(category.id)}
             className={`p-6 border-2 rounded-lg text-left transition-all ${
               selectedCategoryId === category.id

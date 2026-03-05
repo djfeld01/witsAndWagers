@@ -84,6 +84,7 @@ export default function QuestionSetList({
       <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
         <p className="text-red-700 mb-4">{error}</p>
         <button
+          type="button"
           onClick={fetchQuestionSets}
           className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
         >
@@ -147,6 +148,7 @@ export default function QuestionSetList({
                 </div>
                 <div className="flex-shrink-0">
                   <button
+                    type="button"
                     onClick={() => onPreview(set.id, set.name)}
                     className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
                   >
