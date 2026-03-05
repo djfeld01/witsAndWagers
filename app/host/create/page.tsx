@@ -163,6 +163,11 @@ export default function CreateGamePage() {
     setError(null);
 
     try {
+      console.log("Creating game with questions:", {
+        title,
+        questionCount: loadedQuestions.length,
+      });
+
       const response = await fetch("/api/games", {
         method: "POST",
         headers: {
@@ -181,14 +186,19 @@ export default function CreateGamePage() {
         }),
       });
 
+      console.log("Response status:", response.status);
+
       if (!response.ok) {
         const data = await response.json();
+        console.error("Error response:", data);
         throw new Error(data.error?.message || "Failed to create game");
       }
 
       const data = await response.json();
+      console.log("Game created successfully:", data);
       router.push(`/host/${data.gameId}`);
     } catch (err) {
+      console.error("Error creating game:", err);
       setError(err instanceof Error ? err.message : "Failed to create game");
       setIsSubmitting(false);
     }
@@ -242,6 +252,7 @@ export default function CreateGamePage() {
               onBack={handleBackToSelection}
               onCreateGame={handleCreateGameWithQuestions}
               isCreating={isSubmitting}
+              error={error}
             />
           ) : (
             // Selection View

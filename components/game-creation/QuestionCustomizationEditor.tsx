@@ -19,6 +19,7 @@ interface QuestionCustomizationEditorProps {
   onBack: () => void;
   onCreateGame: () => void;
   isCreating: boolean;
+  error?: string | null;
 }
 
 export default function QuestionCustomizationEditor({
@@ -27,6 +28,7 @@ export default function QuestionCustomizationEditor({
   onBack,
   onCreateGame,
   isCreating,
+  error,
 }: QuestionCustomizationEditorProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Question | null>(null);
@@ -341,6 +343,12 @@ export default function QuestionCustomizationEditor({
       </div>
 
       <div className="border-t pt-6">
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+        )}
+
         <button
           type="button"
           onClick={onCreateGame}
