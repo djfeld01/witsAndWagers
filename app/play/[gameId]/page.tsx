@@ -404,7 +404,10 @@ export default function PlayerViewPage() {
                           }`}
                         >
                           <div className="text-2xl font-bold text-gray-900">
-                            {option.guess}
+                            {formatNumber(
+                              option.numericGuess,
+                              currentQuestion.answerFormat,
+                            )}
                           </div>
                           {option.isZero && (
                             <div className="text-xs text-gray-600 mt-1">

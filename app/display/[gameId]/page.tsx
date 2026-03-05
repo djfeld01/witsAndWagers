@@ -4,11 +4,15 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useGameChannel } from "@/lib/hooks/useGameChannel";
 import { formatNumber } from "@/lib/format";
+import { getResponsiveTextStyle } from "@/lib/display/responsiveText";
+import FinalResultsScreen from "./components/FinalResultsScreen";
+import { generateQRCode } from "@/lib/qrcode";
 
 interface GameState {
   game: {
     id: string;
     title: string;
+    joinCode: string;
     currentPhase: "guessing" | "betting" | "reveal";
     currentQuestionId: string | null;
   };
@@ -19,7 +23,7 @@ interface GameState {
     correctAnswer: string;
     answerFormat: "plain" | "currency" | "date" | "percentage";
     followUpNotes: string | null;
-    order: number;
+    orderIndex: number;
   }>;
   players: Array<{
     id: string;
@@ -47,10 +51,9 @@ export default function DisplayViewPage() {
 
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showAllPlayers, setShowAllPlayers] = useState(false);
-  const [showNavigation, setShowNavigation] = useState(false);
   const [isAdvancing, setIsAdvancing] = useState(false);
-  const [leaderboardExpanded, setLeaderboardExpanded] = useState(true);
+  const [showNavigation, setShowNavigation] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
 
   // Fetch game state
   const fetchGameState = async () => {
@@ -78,7 +81,11 @@ export default function DisplayViewPage() {
       reveal: "guessing",
     };
 
-    const targetPhase = phaseMap[gameState.game.currentPhase];
+    // Special case: if no current question, we're starting the game
+    // Stay in guessing phase to trigger first question setup
+    const targetPhase = !gameState.game.currentQuestionId
+      ? "guessing"
+      : phaseMap[gameState.game.currentPhase];
 
     setIsAdvancing(true);
     try {
@@ -91,7 +98,18 @@ export default function DisplayViewPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to advance phase");
+        const errorData = await response.json();
+
+        // If game is complete, silently ignore - this is expected behavior
+        if (errorData.error?.code === "GAME_COMPLETE") {
+          console.log("Game is complete - staying on final results screen");
+          return;
+        }
+
+        console.error("Advance phase error:", errorData);
+        throw new Error(
+          `Failed to advance phase: ${errorData.error?.message || response.statusText}`,
+        );
       }
 
       await fetchGameState();
@@ -143,9 +161,17 @@ export default function DisplayViewPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameId]);
 
+  // Generate QR code
+  useEffect(() => {
+    if (gameState?.game.joinCode) {
+      const joinUrl = `${window.location.origin}/join/${gameState.game.joinCode}`;
+      generateQRCode(joinUrl).then(setQrCodeUrl);
+    }
+  }, [gameState?.game.joinCode]);
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 to-purple-900 flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-br from-blue-900 to-purple-900 flex items-center justify-center">
         <div className="text-3xl text-white">Loading...</div>
       </div>
     );
@@ -153,7 +179,7 @@ export default function DisplayViewPage() {
 
   if (!gameState) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 to-purple-900 flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-br from-blue-900 to-purple-900 flex items-center justify-center">
         <div className="text-3xl text-white">Game not found</div>
       </div>
     );
@@ -167,7 +193,27 @@ export default function DisplayViewPage() {
   const sortedPlayers = [...gameState.players].sort(
     (a, b) => b.score - a.score,
   );
-  const topPlayers = sortedPlayers.slice(0, 3);
+
+  // Calculate submission counts
+  const submittedGuesses = gameState.guesses.filter(
+    (g) => g.questionId === gameState.game.currentQuestionId,
+  ).length;
+
+  const submittedBets = gameState.bets.filter(
+    (b) => b.questionId === gameState.game.currentQuestionId,
+  ).length;
+
+  const totalPlayers = gameState.players.length;
+
+  // Detect game completion
+  const isLastQuestion =
+    currentQuestion &&
+    gameState.questions.length > 0 &&
+    currentQuestion.orderIndex ===
+      Math.max(...gameState.questions.map((q) => q.orderIndex));
+
+  const showFinalResults =
+    gameState.game.currentPhase === "reveal" && isLastQuestion;
 
   // Get guesses for betting/reveal phase
   const currentGuesses = gameState.guesses
@@ -181,6 +227,53 @@ export default function DisplayViewPage() {
       };
     })
     .sort((a, b) => a.numericGuess - b.numericGuess);
+
+  // Calculate responsive grid layout based on player count
+  // Total boxes = player guesses + 1 (zero option)
+  const totalBoxes = currentGuesses.length + 1;
+
+  // Determine grid columns and sizing based on total boxes
+  const getGridConfig = () => {
+    if (totalBoxes <= 4) {
+      return {
+        cols: "grid-cols-2 md:grid-cols-3",
+        padding: "p-12",
+        numberSize: "text-7xl",
+        nameSize: "text-xl",
+        gap: "gap-8",
+        maxWidth: "max-w-4xl",
+      };
+    } else if (totalBoxes <= 9) {
+      return {
+        cols: "grid-cols-3 md:grid-cols-4",
+        padding: "p-10",
+        numberSize: "text-6xl",
+        nameSize: "text-lg",
+        gap: "gap-6",
+        maxWidth: "max-w-6xl",
+      };
+    } else if (totalBoxes <= 16) {
+      return {
+        cols: "grid-cols-3 md:grid-cols-4 lg:grid-cols-5",
+        padding: "p-8",
+        numberSize: "text-5xl",
+        nameSize: "text-base",
+        gap: "gap-4",
+        maxWidth: "max-w-7xl",
+      };
+    } else {
+      return {
+        cols: "grid-cols-4 md:grid-cols-5 lg:grid-cols-6",
+        padding: "p-6",
+        numberSize: "text-4xl",
+        nameSize: "text-sm",
+        gap: "gap-3",
+        maxWidth: "max-w-7xl",
+      };
+    }
+  };
+
+  const gridConfig = getGridConfig();
 
   // Find closest guess for reveal phase
   let closestGuessId: string | null = null;
@@ -203,11 +296,11 @@ export default function DisplayViewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-900 to-blue-950 text-white">
-      {/* Hidden Navigation Toggle - Click bottom-left corner to reveal */}
+    <div className="min-h-screen bg-linear-to-br from-red-900 to-blue-950 text-white">
+      {/* Hidden Navigation Toggle - Click bottom-right corner to reveal */}
       <button
         onClick={() => setShowNavigation(!showNavigation)}
-        className="fixed bottom-4 left-4 w-12 h-12 bg-gray-800 bg-opacity-50 hover:bg-opacity-70 rounded-full flex items-center justify-center z-50 transition-all"
+        className="fixed bottom-4 right-4 w-12 h-12 bg-gray-800 bg-opacity-50 hover:bg-opacity-70 rounded-full flex items-center justify-center z-50 transition-all"
         title="Toggle navigation"
       >
         <svg
@@ -226,21 +319,21 @@ export default function DisplayViewPage() {
       </button>
 
       {/* Navigation Panel */}
-      {showNavigation && (
-        <div className="fixed bottom-20 left-4 bg-black bg-opacity-80 backdrop-blur-sm rounded-xl p-4 z-50 min-w-[200px]">
+      {showNavigation && !showFinalResults && (
+        <div className="fixed bottom-20 right-4 bg-black bg-opacity-80 backdrop-blur-sm rounded-xl p-4 z-50 min-w-[200px]">
           <div className="text-sm text-gray-400 mb-2">Navigation</div>
           <button
             onClick={advancePhase}
             disabled={isAdvancing}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white py-2 px-4 rounded-lg font-medium transition-colors"
+            className="w-full bg-tangerine-dream-500 hover:bg-tangerine-dream-600 disabled:bg-gray-600 text-white py-3 px-4 rounded-lg font-bold transition-colors"
           >
             {isAdvancing
               ? "Processing..."
               : gameState?.game.currentPhase === "guessing"
-                ? "Start Betting"
+                ? "Start Betting →"
                 : gameState?.game.currentPhase === "betting"
-                  ? "Reveal Answer"
-                  : "Next Question"}
+                  ? "Reveal Answer →"
+                  : "Next Question →"}
           </button>
         </div>
       )}
@@ -249,17 +342,112 @@ export default function DisplayViewPage() {
       <div className="bg-black bg-opacity-30 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-8 py-6 flex justify-between items-center">
           <h1 className="text-4xl font-bold">{gameState.game.title}</h1>
-          <div className="text-2xl font-mono bg-white text-blue-900 px-6 py-2 rounded-lg">
-            {gameState.game.currentPhase.toUpperCase()}
+          <div className="flex items-center gap-4">
+            {currentQuestion && (
+              <div className="text-lg text-blue-200">
+                {gameState.game.currentPhase === "guessing"
+                  ? `${submittedGuesses}/${totalPlayers} guessed`
+                  : gameState.game.currentPhase === "betting"
+                    ? `${submittedBets}/${totalPlayers} bet`
+                    : ""}
+              </div>
+            )}
+            <div className="text-2xl font-mono bg-white text-blue-900 px-6 py-2 rounded-lg">
+              {gameState.game.currentPhase.toUpperCase()}
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Horizontal Leaderboard Bar */}
+      {sortedPlayers.length > 0 && (
+        <div className="bg-gray-800 bg-opacity-80 backdrop-blur-sm border-b border-gray-700">
+          <div className="max-w-7xl mx-auto px-8 py-2">
+            <div className="flex items-center gap-4 overflow-x-auto">
+              <div className="text-xs font-bold text-gray-400 whitespace-nowrap">
+                LEADERBOARD:
+              </div>
+              {sortedPlayers.slice(0, 10).map((player, index) => (
+                <div
+                  key={player.id}
+                  className={`flex items-center gap-2 px-3 py-1 rounded-lg whitespace-nowrap text-sm ${
+                    index === 0
+                      ? "bg-yellow-500 bg-opacity-30 border border-yellow-400"
+                      : index === 1
+                        ? "bg-gray-400 bg-opacity-30 border border-gray-400"
+                        : index === 2
+                          ? "bg-orange-600 bg-opacity-30 border border-orange-500"
+                          : "bg-gray-700 bg-opacity-50"
+                  }`}
+                >
+                  <span className="text-base">
+                    {index === 0
+                      ? "🥇"
+                      : index === 1
+                        ? "🥈"
+                        : index === 2
+                          ? "🥉"
+                          : `${index + 1}.`}
+                  </span>
+                  <span className="font-medium">{player.displayName}</span>
+                  <span className="font-bold">{player.score}</span>
+                </div>
+              ))}
+              {sortedPlayers.length > 10 && (
+                <div className="text-xs text-gray-400">
+                  +{sortedPlayers.length - 10} more
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-8 py-12">
         {!currentQuestion ? (
           <div className="text-center py-20">
-            <div className="text-4xl mb-8">Waiting for game to start...</div>
+            <div className="text-6xl font-bold mb-12">Join Now!</div>
+
+            {/* QR Code */}
+            {qrCodeUrl && (
+              <div className="mb-8 flex justify-center">
+                <img
+                  src={qrCodeUrl}
+                  alt="Join Game QR Code"
+                  className="w-64 h-64 bg-white p-4 rounded-xl"
+                />
+              </div>
+            )}
+
+            {/* Join Code */}
+            <div className="mb-12">
+              <div className="text-2xl text-blue-200 mb-4">Join Code:</div>
+              <div className="text-8xl font-bold font-mono bg-white text-blue-900 px-12 py-6 rounded-xl inline-block">
+                {gameState.game.joinCode}
+              </div>
+            </div>
+
+            {/* Player Count */}
+            <div className="text-3xl text-blue-200 mb-12">
+              {gameState.players.length}{" "}
+              {gameState.players.length === 1 ? "player" : "players"} ready
+            </div>
+
+            {/* Start Game Button */}
+            <button
+              onClick={advancePhase}
+              disabled={isAdvancing || gameState.questions.length === 0}
+              className="bg-tea-green-500 hover:bg-tea-green-600 disabled:bg-gray-600 text-white text-4xl font-bold py-6 px-16 rounded-xl transition-colors disabled:cursor-not-allowed"
+            >
+              {isAdvancing ? "Starting..." : "Start Game"}
+            </button>
+
+            {gameState.questions.length === 0 && (
+              <div className="text-xl text-yellow-300 mt-6">
+                Add questions on the host page to start the game
+              </div>
+            )}
           </div>
         ) : (
           <div className="space-y-8">
@@ -300,13 +488,19 @@ export default function DisplayViewPage() {
                   <div className="text-3xl font-bold text-center mb-8">
                     Place Your Bets!
                   </div>
-                  <div className="grid grid-cols-3 gap-8 max-w-6xl mx-auto">
+                  <div
+                    className={`grid ${gridConfig.cols} ${gridConfig.gap} ${gridConfig.maxWidth} mx-auto`}
+                  >
                     {/* Zero option */}
-                    <div className="bg-gray-200 backdrop-blur-sm p-12 rounded-xl text-center border-4 border-gray-600">
-                      <div className="text-7xl font-bold mb-3 text-gray-900">
+                    <div
+                      className={`bg-gray-200 backdrop-blur-sm ${gridConfig.padding} rounded-xl text-center border-4 border-gray-600`}
+                    >
+                      <div
+                        className={`${gridConfig.numberSize} font-bold mb-3 text-gray-900`}
+                      >
                         0
                       </div>
-                      <div className="text-lg text-gray-700">
+                      <div className={`${gridConfig.nameSize} text-gray-700`}>
                         Always available
                       </div>
                     </div>
@@ -315,15 +509,18 @@ export default function DisplayViewPage() {
                     {currentGuesses.map((guess) => (
                       <div
                         key={guess.id}
-                        className="bg-white backdrop-blur-sm p-12 rounded-xl text-center border-4 border-blue-600"
+                        className={`bg-white backdrop-blur-sm ${gridConfig.padding} rounded-xl text-center border-4 border-blue-600`}
                       >
-                        <div className="text-7xl font-bold mb-3 text-gray-900">
+                        <div
+                          className={`font-bold mb-3 text-gray-900 ${gridConfig.numberSize}`}
+                          style={getResponsiveTextStyle(guess.numericGuess)}
+                        >
                           {formatNumber(
                             guess.numericGuess,
                             currentQuestion.answerFormat,
                           )}
                         </div>
-                        <div className="text-xl text-gray-700">
+                        <div className={`${gridConfig.nameSize} text-gray-700`}>
                           {guess.playerName}
                         </div>
                       </div>
@@ -339,174 +536,106 @@ export default function DisplayViewPage() {
 
             {/* Reveal Phase - Show Answer and Winners */}
             {gameState.game.currentPhase === "reveal" && (
-              <div>
-                {/* Question (smaller) */}
-                <div className="text-center mb-12">
-                  <div className="text-4xl font-bold mb-4">
-                    {currentQuestion.text}
-                  </div>
-                  {currentQuestion.subText && (
-                    <div className="text-2xl text-blue-200">
-                      {currentQuestion.subText}
+              <>
+                {showFinalResults ? (
+                  <FinalResultsScreen players={sortedPlayers} gameId={gameId} />
+                ) : (
+                  <div>
+                    {/* Question (smaller) */}
+                    <div className="text-center mb-12">
+                      <div className="text-4xl font-bold mb-4">
+                        {currentQuestion.text}
+                      </div>
+                      {currentQuestion.subText && (
+                        <div className="text-2xl text-blue-200">
+                          {currentQuestion.subText}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
 
-                {/* Correct Answer */}
-                <div className="text-center mb-12">
-                  <div className="text-2xl text-green-300 mb-4">
-                    Correct Answer
-                  </div>
-                  <div className="text-8xl font-bold text-green-400 mb-8">
-                    {formatNumber(
-                      parseFloat(currentQuestion.correctAnswer),
-                      currentQuestion.answerFormat,
+                    {/* Correct Answer */}
+                    <div className="text-center mb-12">
+                      <div className="text-2xl text-green-300 mb-4">
+                        Correct Answer
+                      </div>
+                      <div
+                        className="font-bold text-green-400 mb-8"
+                        style={getResponsiveTextStyle(
+                          parseFloat(currentQuestion.correctAnswer),
+                        )}
+                      >
+                        {formatNumber(
+                          parseFloat(currentQuestion.correctAnswer),
+                          currentQuestion.answerFormat,
+                        )}
+                      </div>
+                      {currentQuestion.followUpNotes && (
+                        <div className="bg-blue-800 bg-opacity-50 backdrop-blur-sm p-6 rounded-xl max-w-4xl mx-auto">
+                          <p className="text-2xl text-blue-100">
+                            {currentQuestion.followUpNotes}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Guesses with Winner Highlighted */}
+                    {currentGuesses.length > 0 && (
+                      <div className="mb-12">
+                        <div className="text-3xl font-bold text-center mb-8">
+                          All Guesses
+                        </div>
+                        <div
+                          className={`grid ${gridConfig.cols} ${gridConfig.gap} ${gridConfig.maxWidth} mx-auto`}
+                        >
+                          {currentGuesses.map((guess) => (
+                            <div
+                              key={guess.id}
+                              className={`${gridConfig.padding} rounded-xl text-center border-4 ${
+                                guess.id === closestGuessId
+                                  ? "bg-green-500 bg-opacity-30 border-green-400 scale-105"
+                                  : "bg-white border-gray-400"
+                              }`}
+                            >
+                              {guess.id === closestGuessId && (
+                                <div
+                                  className={`${gridConfig.nameSize} text-green-300 mb-2`}
+                                >
+                                  ⭐ WINNER ⭐
+                                </div>
+                              )}
+                              <div
+                                className={`font-bold mb-2 ${gridConfig.numberSize} ${
+                                  guess.id === closestGuessId
+                                    ? "text-white"
+                                    : "text-gray-900"
+                                }`}
+                                style={getResponsiveTextStyle(
+                                  guess.numericGuess,
+                                )}
+                              >
+                                {formatNumber(
+                                  guess.numericGuess,
+                                  currentQuestion.answerFormat,
+                                )}
+                              </div>
+                              <div
+                                className={`${gridConfig.nameSize} ${
+                                  guess.id === closestGuessId
+                                    ? "text-green-200"
+                                    : "text-gray-700"
+                                }`}
+                              >
+                                {guess.playerName}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     )}
                   </div>
-                  {currentQuestion.followUpNotes && (
-                    <div className="bg-blue-800 bg-opacity-50 backdrop-blur-sm p-6 rounded-xl max-w-4xl mx-auto">
-                      <p className="text-2xl text-blue-100">
-                        {currentQuestion.followUpNotes}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Guesses with Winner Highlighted */}
-                {currentGuesses.length > 0 && (
-                  <div className="mb-12">
-                    <div className="text-3xl font-bold text-center mb-8">
-                      All Guesses
-                    </div>
-                    <div className="grid grid-cols-3 gap-8 max-w-6xl mx-auto">
-                      {currentGuesses.map((guess) => (
-                        <div
-                          key={guess.id}
-                          className={`p-12 rounded-xl text-center border-4 ${
-                            guess.id === closestGuessId
-                              ? "bg-green-500 bg-opacity-30 border-green-400 scale-110"
-                              : "bg-white border-gray-400"
-                          }`}
-                        >
-                          {guess.id === closestGuessId && (
-                            <div className="text-2xl text-green-300 mb-3">
-                              ⭐ WINNER ⭐
-                            </div>
-                          )}
-                          <div
-                            className={`text-7xl font-bold mb-3 ${
-                              guess.id === closestGuessId
-                                ? "text-white"
-                                : "text-gray-900"
-                            }`}
-                          >
-                            {formatNumber(
-                              guess.numericGuess,
-                              currentQuestion.answerFormat,
-                            )}
-                          </div>
-                          <div
-                            className={`text-xl ${
-                              guess.id === closestGuessId
-                                ? "text-green-200"
-                                : "text-gray-700"
-                            }`}
-                          >
-                            {guess.playerName}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
                 )}
-              </div>
+              </>
             )}
-          </div>
-        )}
-      </div>
-
-      {/* Leaderboard Sidebar */}
-      <div className="fixed top-24 right-8 bg-black bg-opacity-50 backdrop-blur-sm rounded-xl p-4 min-w-[250px]">
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-xl font-bold">
-            {leaderboardExpanded ? "Leaderboard" : "Leader"}
-          </h3>
-          <button
-            onClick={() => setLeaderboardExpanded(!leaderboardExpanded)}
-            className="text-xs bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded"
-          >
-            {leaderboardExpanded ? "Collapse" : "Expand"}
-          </button>
-        </div>
-
-        <div className="space-y-2">
-          {leaderboardExpanded ? (
-            <>
-              {/* Show top 3 or all players */}
-              {(showAllPlayers ? sortedPlayers : topPlayers).map(
-                (player, index) => (
-                  <div
-                    key={player.id}
-                    className={`flex justify-between items-center p-2 rounded-lg ${
-                      index === 0
-                        ? "bg-yellow-500 bg-opacity-30 border-2 border-yellow-400"
-                        : index === 1
-                          ? "bg-gray-400 bg-opacity-30 border-2 border-gray-400"
-                          : index === 2
-                            ? "bg-orange-600 bg-opacity-30 border-2 border-orange-500"
-                            : "bg-white bg-opacity-10"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="text-xl font-bold w-6">
-                        {index === 0
-                          ? "🥇"
-                          : index === 1
-                            ? "🥈"
-                            : index === 2
-                              ? "🥉"
-                              : `${index + 1}.`}
-                      </div>
-                      <div className="font-medium text-sm">
-                        {player.displayName}
-                      </div>
-                    </div>
-                    <div className="text-xl font-bold">{player.score}</div>
-                  </div>
-                ),
-              )}
-              {sortedPlayers.length > 3 && (
-                <button
-                  onClick={() => setShowAllPlayers(!showAllPlayers)}
-                  className="w-full text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded mt-2"
-                >
-                  {showAllPlayers ? "Top 3" : "Show All"}
-                </button>
-              )}
-            </>
-          ) : (
-            <>
-              {/* Show only top player */}
-              {sortedPlayers.length > 0 && (
-                <div className="flex justify-between items-center p-3 rounded-lg bg-yellow-500 bg-opacity-30 border-2 border-yellow-400">
-                  <div className="flex items-center gap-2">
-                    <div className="text-2xl font-bold">🥇</div>
-                    <div className="font-medium">
-                      {sortedPlayers[0].displayName}
-                    </div>
-                  </div>
-                  <div className="text-2xl font-bold">
-                    {sortedPlayers[0].score}
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-
-        {sortedPlayers.length === 0 && (
-          <div className="text-center text-gray-400 py-2 text-sm">
-            No players yet
           </div>
         )}
       </div>

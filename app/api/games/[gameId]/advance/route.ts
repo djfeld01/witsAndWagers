@@ -92,18 +92,24 @@ export async function POST(
     const currentPhase = game[0].currentPhase;
     const currentQuestionId = game[0].currentQuestionId;
 
-    // Validate phase transition follows state machine
-    const allowedTransitions = VALID_TRANSITIONS[currentPhase];
-    if (!allowedTransitions || !allowedTransitions.includes(targetPhase)) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "INVALID_PHASE",
-            message: `Cannot transition from ${currentPhase} to ${targetPhase}. Valid transitions: ${allowedTransitions?.join(", ") || "none"}`,
+    // Special case: Starting the game for the first time
+    // Allow "guessing" -> "guessing" transition when no question is set
+    const isStartingGame = !currentQuestionId && targetPhase === "guessing";
+
+    // Validate phase transition follows state machine (unless starting game)
+    if (!isStartingGame) {
+      const allowedTransitions = VALID_TRANSITIONS[currentPhase];
+      if (!allowedTransitions || !allowedTransitions.includes(targetPhase)) {
+        return NextResponse.json(
+          {
+            error: {
+              code: "INVALID_PHASE",
+              message: `Cannot transition from ${currentPhase} to ${targetPhase}. Valid transitions: ${allowedTransitions?.join(", ") || "none"}`,
+            },
           },
-        },
-        { status: 400 },
-      );
+          { status: 400 },
+        );
+      }
     }
 
     // If advancing to reveal, calculate scores
@@ -228,8 +234,25 @@ export async function POST(
         (q) => q.id === currentQuestionId,
       );
 
-      // Move to next question (or loop back to first if at end)
-      const nextIndex = (currentIndex + 1) % allQuestions.length;
+      // Check if we're on the last question
+      const isLastQuestion = currentIndex === allQuestions.length - 1;
+
+      if (isLastQuestion) {
+        // Stay on the last question - don't advance
+        // This allows the final results screen to continue showing
+        return NextResponse.json(
+          {
+            error: {
+              code: "GAME_COMPLETE",
+              message: "Game is complete. Cannot advance past the last question.",
+            },
+          },
+          { status: 400 },
+        );
+      }
+
+      // Move to next question
+      const nextIndex = currentIndex + 1;
       const nextQuestionId = allQuestions[nextIndex].id;
 
       await db
@@ -237,6 +260,35 @@ export async function POST(
         .set({
           currentPhase: targetPhase,
           currentQuestionId: nextQuestionId,
+        })
+        .where(eq(games.id, gameId));
+    } else if (!currentQuestionId && targetPhase === "guessing") {
+      // Starting the game for the first time - set first question
+      const allQuestions = await db
+        .select()
+        .from(questions)
+        .where(eq(questions.gameId, gameId))
+        .orderBy(asc(questions.orderIndex));
+
+      if (allQuestions.length === 0) {
+        return NextResponse.json(
+          {
+            error: {
+              code: "VALIDATION_ERROR",
+              message: "No questions found for this game",
+            },
+          },
+          { status: 400 },
+        );
+      }
+
+      const firstQuestionId = allQuestions[0].id;
+
+      await db
+        .update(games)
+        .set({
+          currentPhase: targetPhase,
+          currentQuestionId: firstQuestionId,
         })
         .where(eq(games.id, gameId));
     } else {
