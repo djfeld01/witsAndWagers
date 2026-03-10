@@ -41,15 +41,29 @@ export function FileUploadButton({
 
       if (!response.ok) {
         if (data.error?.details && Array.isArray(data.error.details)) {
+          // Format validation errors with better structure
           const errorMessages = data.error.details
             .map((err: any) => {
-              if (err.index !== undefined) {
-                return `Question ${err.index + 1}: ${err.errors?.map((e: any) => e.message).join(", ") || err.message}`;
+              if (err.index !== undefined && err.errors) {
+                // Batch validation errors
+                const fieldErrors = err.errors
+                  .map((e: any) => `  • ${e.field}: ${e.message}`)
+                  .join("\n");
+                return `Question ${err.index + 1}:\n${fieldErrors}`;
+              } else if (err.field && err.message) {
+                // Parse errors
+                return `${err.message}`;
               }
-              return err.message;
+              return err.message || "Unknown error";
             })
-            .join("\n");
-          throw new Error(errorMessages);
+            .join("\n\n");
+
+          const errorHeader =
+            data.error.details.length === 1
+              ? "Error found:"
+              : `${data.error.details.length} errors found:`;
+
+          throw new Error(`${errorHeader}\n\n${errorMessages}`);
         }
         throw new Error(data.error?.message || "Failed to import questions");
       }
@@ -95,8 +109,44 @@ export function FileUploadButton({
         </label>
       </div>
 
+      {/* Format help text */}
+      <div className="text-xs text-gray-600">
+        <details className="cursor-pointer">
+          <summary className="hover:text-gray-800">CSV format help</summary>
+          <div className="mt-2 p-2 bg-gray-50 rounded border border-gray-200">
+            <p className="mb-1">Required columns:</p>
+            <ul className="list-disc list-inside ml-2 mb-2">
+              <li>
+                <code className="bg-gray-200 px-1 rounded">text</code> - The
+                question text
+              </li>
+              <li>
+                <code className="bg-gray-200 px-1 rounded">correctAnswer</code>{" "}
+                - A number
+              </li>
+            </ul>
+            <p className="mb-1">Optional columns:</p>
+            <ul className="list-disc list-inside ml-2">
+              <li>
+                <code className="bg-gray-200 px-1 rounded">subText</code> -
+                Additional context
+              </li>
+              <li>
+                <code className="bg-gray-200 px-1 rounded">answerFormat</code> -
+                plain, currency, date, or percentage
+              </li>
+              <li>
+                <code className="bg-gray-200 px-1 rounded">followUpNotes</code>{" "}
+                - Fun facts to show after reveal
+              </li>
+            </ul>
+          </div>
+        </details>
+      </div>
+
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm whitespace-pre-line">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm whitespace-pre-line max-h-60 overflow-y-auto">
+          <div className="font-semibold mb-1">Import Failed</div>
           {error}
         </div>
       )}
