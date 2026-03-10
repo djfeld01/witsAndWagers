@@ -21,6 +21,7 @@ export function AddQuestionButton({
     "plain" | "currency" | "date" | "percentage"
   >("plain");
   const [followUpNotes, setFollowUpNotes] = useState("");
+  const [roundCurrency, setRoundCurrency] = useState(true); // Default to true
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,6 +32,7 @@ export function AddQuestionButton({
     setCorrectAnswer("");
     setAnswerFormat("plain");
     setFollowUpNotes("");
+    setRoundCurrency(true); // Reset to default
     setError(null);
   };
 
@@ -60,6 +62,7 @@ export function AddQuestionButton({
         correctAnswer: parseFloat(correctAnswer),
         answerFormat,
         followUpNotes: followUpNotes.trim() || undefined,
+        roundCurrency, // Include roundCurrency in the request
       };
 
       console.log("Adding question:", questionData);
@@ -181,6 +184,25 @@ export function AddQuestionButton({
             </select>
           </div>
         </div>
+
+        {answerFormat === "currency" && (
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="roundCurrency"
+              checked={roundCurrency}
+              onChange={(e) => setRoundCurrency(e.target.checked)}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              disabled={saving}
+            />
+            <label
+              htmlFor="roundCurrency"
+              className="ml-2 block text-sm text-gray-700"
+            >
+              Round currency to whole dollars
+            </label>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">

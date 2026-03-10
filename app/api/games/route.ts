@@ -78,6 +78,7 @@ export async function POST(request: NextRequest) {
           correctAnswer: String(q.correctAnswer),
           answerFormat: (q.answerFormat || "plain") as AnswerFormat,
           followUpNotes: q.followUpNotes || null,
+          roundCurrency: q.roundCurrency !== undefined ? (q.roundCurrency ? 1 : 0) : 1, // Convert boolean to integer, default to 1 (true)
         }));
 
         await tx.insert(questions).values(questionValues);

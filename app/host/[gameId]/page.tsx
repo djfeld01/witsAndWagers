@@ -25,6 +25,7 @@ interface GameState {
     answerFormat: "plain" | "currency" | "date" | "percentage";
     followUpNotes: string | null;
     order: number;
+    roundCurrency: boolean | null;
   }>;
   players: Array<{
     id: string;
@@ -339,6 +340,7 @@ export default function HostDashboardPage() {
                   correctAnswer: q.correctAnswer,
                   answerFormat: q.answerFormat,
                   followUpNotes: q.followUpNotes,
+                  roundCurrency: q.roundCurrency,
                 }))}
                 isActive={isGameActive}
                 onQuestionsChange={() => fetchGameState()}

@@ -20,6 +20,7 @@ export async function GET(
         answerFormat: questionSetQuestions.answerFormat,
         followUpNotes: questionSetQuestions.followUpNotes,
         orderIndex: questionSetQuestions.orderIndex,
+        roundCurrency: questionSetQuestions.roundCurrency,
       })
       .from(questionSetQuestions)
       .where(eq(questionSetQuestions.questionSetId, setId))
@@ -32,7 +33,13 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ questions });
+    // Convert roundCurrency from integer to boolean
+    const questionsWithBooleanRoundCurrency = questions.map(q => ({
+      ...q,
+      roundCurrency: q.roundCurrency === null ? null : q.roundCurrency === 1,
+    }));
+
+    return NextResponse.json({ questions: questionsWithBooleanRoundCurrency });
   } catch (error) {
     console.error("Error fetching questions:", error);
     return NextResponse.json(

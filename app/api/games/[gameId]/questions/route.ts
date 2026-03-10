@@ -89,6 +89,7 @@ export async function POST(
       correctAnswer: String(body.correctAnswer),
       answerFormat: body.answerFormat || ("plain" as const),
       followUpNotes: body.followUpNotes || null,
+      roundCurrency: body.roundCurrency !== undefined ? (body.roundCurrency ? 1 : 0) : 1, // Convert boolean to integer, default to 1 (true)
     };
 
     console.log("Inserting question:", newQuestion);

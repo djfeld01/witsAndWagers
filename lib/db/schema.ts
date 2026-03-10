@@ -42,6 +42,7 @@ export const questions = pgTable("questions", {
   }).notNull(),
   answerFormat: answerFormatEnum("answer_format").notNull().default("plain"),
   followUpNotes: text("follow_up_notes"),
+  roundCurrency: integer("round_currency").default(1), // 1=true, 0=false, null=default to true
 });
 
 // Players table
@@ -117,4 +118,5 @@ export const questionSetQuestions = pgTable("question_set_questions", {
   }).notNull(),
   answerFormat: answerFormatEnum("answer_format").notNull().default("plain"),
   followUpNotes: text("follow_up_notes"),
+  roundCurrency: integer("round_currency").default(1), // 1=true, 0=false, null=default to true
 });
