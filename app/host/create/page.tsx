@@ -29,6 +29,7 @@ interface LoadedQuestion {
   followUpNotes: string | null;
   orderIndex: number;
   sourceCategoryName?: string;
+  roundCurrency?: boolean | null; // Controls currency rounding, null defaults to true
 }
 
 export default function CreateGamePage() {

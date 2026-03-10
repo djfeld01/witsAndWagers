@@ -19,6 +19,12 @@ export function QuestionListEditor({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
   const [editAnswer, setEditAnswer] = useState("");
+  const [editSubText, setEditSubText] = useState("");
+  const [editAnswerFormat, setEditAnswerFormat] = useState<
+    "plain" | "currency" | "date" | "percentage"
+  >("plain");
+  const [editFollowUpNotes, setEditFollowUpNotes] = useState("");
+  const [editRoundCurrency, setEditRoundCurrency] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -89,6 +95,10 @@ export function QuestionListEditor({
     setEditingId(question.id);
     setEditText(question.text);
     setEditAnswer(question.correctAnswer);
+    setEditSubText(question.subText || "");
+    setEditAnswerFormat(question.answerFormat);
+    setEditFollowUpNotes(question.followUpNotes || "");
+    setEditRoundCurrency(question.roundCurrency ?? true);
     setError(null);
   };
 
@@ -104,7 +114,11 @@ export function QuestionListEditor({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             text: editText,
+            subText: editSubText || undefined,
             correctAnswer: parseFloat(editAnswer),
+            answerFormat: editAnswerFormat,
+            followUpNotes: editFollowUpNotes || undefined,
+            roundCurrency: editRoundCurrency,
           }),
         },
       );
@@ -212,13 +226,81 @@ export function QuestionListEditor({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Answer
+                    Sub Text (optional)
                   </label>
                   <input
-                    type="number"
-                    value={editAnswer}
-                    onChange={(e) => setEditAnswer(e.target.value)}
+                    type="text"
+                    value={editSubText}
+                    onChange={(e) => setEditSubText(e.target.value)}
                     className="w-full px-3 py-2 border rounded-md"
+                    disabled={saving}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Answer
+                    </label>
+                    <input
+                      type="number"
+                      value={editAnswer}
+                      onChange={(e) => setEditAnswer(e.target.value)}
+                      className="w-full px-3 py-2 border rounded-md"
+                      disabled={saving}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Format
+                    </label>
+                    <select
+                      value={editAnswerFormat}
+                      onChange={(e) =>
+                        setEditAnswerFormat(
+                          e.target.value as
+                            | "plain"
+                            | "currency"
+                            | "date"
+                            | "percentage",
+                        )
+                      }
+                      className="w-full px-3 py-2 border rounded-md"
+                      disabled={saving}
+                    >
+                      <option value="plain">Plain</option>
+                      <option value="currency">Currency</option>
+                      <option value="date">Date</option>
+                      <option value="percentage">Percentage</option>
+                    </select>
+                  </div>
+                </div>
+                {editAnswerFormat === "currency" && (
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={`editRoundCurrency-${question.id}`}
+                      checked={editRoundCurrency}
+                      onChange={(e) => setEditRoundCurrency(e.target.checked)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      disabled={saving}
+                    />
+                    <label
+                      htmlFor={`editRoundCurrency-${question.id}`}
+                      className="ml-2 block text-sm text-gray-700"
+                    >
+                      Round currency to whole dollars
+                    </label>
+                  </div>
+                )}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Follow-up Notes (optional)
+                  </label>
+                  <textarea
+                    value={editFollowUpNotes}
+                    onChange={(e) => setEditFollowUpNotes(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-md"
+                    rows={2}
                     disabled={saving}
                   />
                 </div>
@@ -245,9 +327,25 @@ export function QuestionListEditor({
                   <div className="font-medium text-gray-900">
                     {index + 1}. {question.text}
                   </div>
+                  {question.subText && (
+                    <div className="text-sm text-gray-600 mt-1">
+                      {question.subText}
+                    </div>
+                  )}
                   <div className="text-sm text-gray-600 mt-1">
                     Answer: {question.correctAnswer}
+                    {question.answerFormat === "currency" && " (currency)"}
+                    {question.answerFormat === "date" && " (year)"}
+                    {question.answerFormat === "percentage" && " (%)"}
+                    {question.answerFormat === "currency" &&
+                      question.roundCurrency === false &&
+                      " - with cents"}
                   </div>
+                  {question.followUpNotes && (
+                    <div className="text-sm text-gray-500 mt-1">
+                      Notes: {question.followUpNotes}
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-2 ml-4">
                   <button

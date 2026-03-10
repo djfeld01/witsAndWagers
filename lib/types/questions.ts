@@ -9,6 +9,7 @@ export interface Question {
   correctAnswer: string; // Stored as string in DB (decimal)
   answerFormat: AnswerFormat;
   followUpNotes: string | null;
+  roundCurrency: boolean | null; // Controls currency rounding, null defaults to true
 }
 
 export interface QuestionInput {
@@ -17,6 +18,7 @@ export interface QuestionInput {
   correctAnswer: number;
   answerFormat?: AnswerFormat;
   followUpNotes?: string;
+  roundCurrency?: boolean; // Controls currency rounding, defaults to true
 }
 
 export interface ImportResult {
@@ -38,6 +40,7 @@ export interface ParsedQuestion {
   correctAnswer: number;
   answerFormat?: AnswerFormat;
   followUpNotes?: string;
+  roundCurrency?: boolean; // Controls currency rounding, defaults to true
 }
 
 export interface ParseResult {

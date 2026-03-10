@@ -15,6 +15,13 @@
       "when": 1772729307735,
       "tag": "0001_grey_viper",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773156711554,
+      "tag": "0002_purple_kang",
+      "breakpoints": true
     }
   ]
 }

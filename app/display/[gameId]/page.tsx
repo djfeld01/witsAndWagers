@@ -24,6 +24,7 @@ interface GameState {
     answerFormat: "plain" | "currency" | "date" | "percentage";
     followUpNotes: string | null;
     orderIndex: number;
+    roundCurrency: boolean | null;
   }>;
   players: Array<{
     id: string;
@@ -600,6 +601,10 @@ export default function DisplayViewPage() {
                             {formatNumber(
                               guess.numericGuess,
                               currentQuestion.answerFormat,
+                              {
+                                roundCurrency:
+                                  currentQuestion.roundCurrency ?? true,
+                              },
                             )}
                           </div>
                           <div
@@ -654,6 +659,10 @@ export default function DisplayViewPage() {
                           {formatNumber(
                             parseFloat(currentQuestion.correctAnswer),
                             currentQuestion.answerFormat,
+                            {
+                              roundCurrency:
+                                currentQuestion.roundCurrency ?? true,
+                            },
                           )}
                         </div>
                         {currentQuestion.followUpNotes && (
@@ -703,6 +712,10 @@ export default function DisplayViewPage() {
                                   {formatNumber(
                                     guess.numericGuess,
                                     currentQuestion.answerFormat,
+                                    {
+                                      roundCurrency:
+                                        currentQuestion.roundCurrency ?? true,
+                                    },
                                   )}
                                 </div>
                                 <div

@@ -10,6 +10,7 @@ interface Question {
   answerFormat: "plain" | "currency" | "date" | "percentage";
   followUpNotes: string | null;
   orderIndex: number;
+  roundCurrency?: boolean | null; // Controls currency rounding, null defaults to true
 }
 
 interface QuestionPreviewModalProps {

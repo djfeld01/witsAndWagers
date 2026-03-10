@@ -11,6 +11,7 @@ interface Question {
   followUpNotes: string | null;
   orderIndex: number;
   sourceCategoryName?: string;
+  roundCurrency?: boolean | null; // Controls currency rounding, null defaults to true
 }
 
 interface QuestionCustomizationEditorProps {
@@ -93,6 +94,7 @@ export default function QuestionCustomizationEditor({
       followUpNotes: null,
       orderIndex: questions.length,
       sourceCategoryName: "Manual",
+      roundCurrency: true, // Default to true for new questions
     };
     onQuestionsChange([...questions, newQuestion]);
     handleEdit(newQuestion);
@@ -208,6 +210,29 @@ export default function QuestionCustomizationEditor({
                     </select>
                   </div>
                 </div>
+
+                {editForm.answerFormat === "currency" && (
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={`roundCurrency-${editForm.id}`}
+                      checked={editForm.roundCurrency ?? true}
+                      onChange={(e) =>
+                        setEditForm({
+                          ...editForm,
+                          roundCurrency: e.target.checked,
+                        })
+                      }
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label
+                      htmlFor={`roundCurrency-${editForm.id}`}
+                      className="ml-2 block text-sm text-gray-700"
+                    >
+                      Round currency to whole dollars
+                    </label>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">

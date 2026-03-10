@@ -57,6 +57,7 @@ export async function PATCH(
       correctAnswer: body.correctAnswer,
       answerFormat: body.answerFormat,
       followUpNotes: body.followUpNotes,
+      roundCurrency: body.roundCurrency,
     };
 
     const validationErrors = validateQuestion(questionData);
@@ -82,6 +83,7 @@ export async function PATCH(
         correctAnswer: String(questionData.correctAnswer),
         answerFormat: questionData.answerFormat || "plain",
         followUpNotes: questionData.followUpNotes || null,
+        roundCurrency: questionData.roundCurrency !== undefined ? (questionData.roundCurrency ? 1 : 0) : undefined, // Convert boolean to integer, undefined means don't update
       })
       .where(and(eq(questions.id, questionId), eq(questions.gameId, gameId)))
       .returning();

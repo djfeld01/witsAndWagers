@@ -112,6 +112,7 @@ export async function GET(
         correctAnswer: q.correctAnswer,
         answerFormat: q.answerFormat,
         followUpNotes: q.followUpNotes,
+        roundCurrency: q.roundCurrency === null ? null : q.roundCurrency === 1, // Convert integer to boolean, preserve null
       })),
       players: gamePlayers.map((p) => ({
         id: p.id,
